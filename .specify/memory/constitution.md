@@ -1,50 +1,42 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Static Web App Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Static-First Architecture
+All content must be deliverable as static files (HTML, CSS, JavaScript, assets). No server-side rendering or backend required for core functionality. Build process generates deployable static files.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Performance Standards
+Pages must load in under 3 seconds on standard broadband. Optimize assets: minify CSS/JS, compress images, lazy-load non-critical resources. Lighthouse performance score target: 90+.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Responsive Design (NON-NEGOTIABLE)
+All pages must be fully responsive and accessible on mobile, tablet, and desktop. Mobile-first approach mandatory. Test on common viewports (320px, 768px, 1024px, 1920px).
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Browser Compatibility
+Support latest two versions of Chrome, Firefox, Safari, and Edge. Graceful degradation for older browsers. No reliance on experimental/non-standard features without polyfills.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Build and Deployment
+Automated build process required. Version all releases. Support for static hosting (GitHub Pages, Netlify, Vercel, S3, etc.). Environment-specific configuration must be build-time injected.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Technology Constraints
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- HTML5 semantic markup required
+- CSS: Modern standards (Flexbox/Grid); preprocessors optional but must compile to standard CSS
+- JavaScript: ES6+ with transpilation for compatibility
+- No backend dependencies for core features
+- External APIs allowed via client-side fetch only
+- All dependencies must be versioned and documented
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Development Workflow
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- Version control (Git) mandatory
+- Branch protection: main/production branch requires review
+- Build must succeed before deployment
+- Asset optimization automated in build pipeline
+- Local development server for testing
+- No sensitive data or secrets in static files
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution defines the non-negotiable standards for the static web app. All features and changes must comply with these principles. Deviations require documented justification and approval. Complexity must serve user needs, not developer convenience.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2025-11-12 | **Last Amended**: 2025-11-12

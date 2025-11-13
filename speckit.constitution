@@ -1,0 +1,128 @@
+# SpecKit Constitution
+
+## Code Quality Principles
+
+### Maintainability
+- Code must be self-documenting with clear, descriptive naming conventions
+- Functions should follow the Single Responsibility Principle
+- Maximum function length: 50 lines of code
+- Maximum file length: 500 lines of code
+- Cyclomatic complexity must not exceed 10 per function
+
+### Readability
+- Use consistent code formatting enforced by automated tooling
+- Avoid deep nesting (maximum 3 levels)
+- Comment only when explaining "why", not "what"
+- Use meaningful variable names that convey intent
+
+### Code Review Standards
+- All code changes require peer review before merging
+- No direct commits to main/production branches
+- Reviewers must verify adherence to all constitution principles
+- Code must pass all automated checks before review
+
+## Testing Standards
+
+### Coverage Requirements
+- Minimum 80% code coverage for all new code
+- Minimum 90% coverage for critical business logic
+- 100% coverage required for security-sensitive code
+
+### Test Types
+- Unit tests: Required for all business logic
+- Integration tests: Required for all API endpoints and external service interactions
+- End-to-end tests: Required for critical user workflows
+- Performance tests: Required for operations handling >1000 requests/second
+
+### Test Quality
+- Tests must be deterministic and repeatable
+- No test interdependencies; tests must be runnable in isolation
+- Test names must clearly describe the scenario and expected outcome
+- Follow AAA pattern: Arrange, Act, Assert
+
+### Continuous Testing
+- All tests must pass before code can be merged
+- Tests must run automatically on every commit
+- Failed tests block deployment to any environment
+
+## User Experience Consistency
+
+### Interface Standards
+- Follow established design system and component library
+- Maintain consistent spacing, typography, and color usage
+- All interactive elements must have hover, focus, and active states
+- Minimum touch target size: 44x44 pixels for mobile
+
+### Accessibility Requirements
+- WCAG 2.1 Level AA compliance mandatory
+- All images must have descriptive alt text
+- Proper heading hierarchy (h1-h6) must be maintained
+- Keyboard navigation must be fully supported
+- Color contrast ratio minimum: 4.5:1 for normal text, 3:1 for large text
+
+### Responsiveness
+- Application must function on viewport widths from 320px to 4K
+- No horizontal scrolling on standard viewport sizes
+- Touch-friendly interfaces on mobile devices
+- Graceful degradation for unsupported browsers
+
+### Error Handling & Feedback
+- All user actions must provide immediate visual feedback
+- Error messages must be clear, actionable, and user-friendly
+- Loading states must be indicated for operations >200ms
+- Success confirmations for destructive or important actions
+
+## Performance Requirements
+
+### Page Load Performance
+- First Contentful Paint (FCP): <1.8 seconds
+- Largest Contentful Paint (LCP): <2.5 seconds
+- Time to Interactive (TTI): <3.8 seconds
+- Cumulative Layout Shift (CLS): <0.1
+- First Input Delay (FID): <100ms
+
+### Runtime Performance
+- UI must maintain 60fps during interactions
+- API response time: <200ms for 95th percentile
+- Database queries: <100ms for 95th percentile
+- Maximum bundle size: 200KB (gzipped) for initial load
+
+### Resource Optimization
+- Images must be optimized and served in modern formats (WebP, AVIF)
+- Lazy loading required for below-the-fold content
+- Code splitting required for routes and heavy components
+- Assets must be cached with appropriate strategies
+
+### Scalability Requirements
+- System must handle 10x current traffic without degradation
+- Horizontal scaling must be supported
+- Database queries must use proper indexing
+- Rate limiting must be implemented for all public APIs
+
+## Monitoring & Observability
+
+### Required Metrics
+- Performance metrics tracked in production
+- Error rates monitored with alerting thresholds
+- User experience metrics (Core Web Vitals) tracked
+- Resource utilization monitored continuously
+
+### Alerting
+- Critical errors trigger immediate alerts
+- Performance degradation >20% triggers investigation
+- Test failure rate >5% blocks deployments
+- Security vulnerabilities require immediate response
+
+## Compliance & Enforcement
+
+### Automated Enforcement
+- Linters enforce code quality standards
+- Automated tests enforce testing requirements
+- Performance budgets enforced in CI/CD pipeline
+- Accessibility checks run automatically
+
+### Review & Evolution
+- Constitution reviewed quarterly
+- Principles updated based on team retrospectives
+- Exceptions require documented justification and approval
+- Metrics tracked to measure adherence and improvement
