@@ -5,6 +5,16 @@
 **Status**: Draft  
 **Input**: User description: "This application will be hosted on cloudflare pages free subscription. Add authentication for two users: readers and contributors. Later we will add a feature for contributors to upload images and movies to create a new blog-post, but for now we will make sure only users with reader-access can read the blog. The authentication can be simple, for instance password-based."
 
+## Clarifications
+
+### Session 2025-11-13
+
+- Q: What are the unit testing requirements for this authentication feature? → A: Require unit tests for critical paths only (login, logout, session validation) with minimum 60% code coverage
+- Q: What should the failed login attempt threshold be before triggering rate limiting? → A: 5 failed attempts trigger 15-minute lockout
+- Q: How should the system handle session expiry while a user is actively browsing? → A: Auto-logout immediately when session expires, redirect to login with message and return URL
+- Q: Should the system allow the same user account to be logged in on multiple devices simultaneously? → A: Allow concurrent logins from multiple devices (no restriction)
+- Q: Which password hashing algorithm should be used? → A: bcrypt with cost factor 10-12
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Reader Accesses Protected Blog Content (Priority: P1)
@@ -62,12 +72,11 @@ A visitor attempts to log in with incorrect credentials or encounters authentica
 
 ### Edge Cases
 
-- What happens when a user's session expires while they're viewing a page? (Auto-logout vs. session renewal)
-- How does the system handle concurrent logins from the same account on different devices? (Allow or restrict)
+- What happens when a user's session expires while they're viewing a page? → Auto-logout with redirect to login, showing session expiry message and preserving return URL
+- How does the system handle concurrent logins from the same account on different devices? → Allow concurrent sessions without restriction
 - What happens if Cloudflare Pages service is unavailable? (Graceful error messaging)
 - How are credentials managed if a reader or contributor forgets their password? (Password reset flow needed?)
 - What happens when a user manually navigates to a direct blog post URL without being authenticated? (Redirect to login with return-to URL)
-- How does the system handle session data persistence across browser sessions? (Remember me option?)
 - What happens if authentication state becomes corrupted or inconsistent? (Force re-login)
 
 ## Requirements *(mandatory)*
@@ -96,20 +105,29 @@ A visitor attempts to log in with incorrect credentials or encounters authentica
 #### Security & Data Protection
 
 - **FR-014**: System MUST use Cloudflare Workers or Functions for server-side authentication to securely verify credentials
-- **FR-015**: System MUST NOT store passwords in plain text (passwords must be hashed using industry-standard algorithms)
-- **FR-016**: System MUST hash and compare passwords server-side via Cloudflare Workers to prevent credential exposure
-- **FR-017**: System MUST implement rate limiting or temporary account lockout after multiple failed login attempts
-- **FR-018**: System MUST use secure session management with encrypted session tokens stored in HTTP-only cookies
-- **FR-019**: System MUST display generic error messages for failed logins (not revealing if username exists or if password is wrong)
-- **FR-020**: System MUST invalidate session data upon explicit logout
-- **FR-021**: System MUST expire sessions after 7 days for "remember me" users or on browser close for non-persistent sessions
+- **FR-015**: System MUST hash passwords using bcrypt algorithm with cost factor between 10 and 12
+- **FR-016**: System MUST NOT store passwords in plain text
+- **FR-017**: System MUST hash and compare passwords server-side via Cloudflare Workers to prevent credential exposure
+- **FR-018**: System MUST implement rate limiting with account lockout: after 5 failed login attempts, lock the account for 15 minutes
+- **FR-019**: System MUST use secure session management with encrypted session tokens stored in HTTP-only cookies
+- **FR-020**: System MUST display generic error messages for failed logins (not revealing if username exists or if password is wrong)
+- **FR-021**: System MUST invalidate session data upon explicit logout
+- **FR-022**: System MUST expire sessions after 7 days for "remember me" users or on browser close for non-persistent sessions
+- **FR-023**: System MUST immediately redirect users to login page when session expires, displaying a message indicating session expiry and preserving the return URL
+- **FR-024**: System MUST allow users to maintain concurrent active sessions from multiple devices without restriction
 
 #### User Role Management
 
-- **FR-022**: System MUST distinguish between Reader and Contributor roles in session/authentication data
-- **FR-023**: Reader role MUST grant access to view all blog content (stories, highlights, family tips)
-- **FR-024**: Contributor role MUST grant the same access as Reader role (upload functionality reserved for future feature)
-- **FR-025**: System MUST maintain role information throughout the authenticated session
+- **FR-025**: System MUST distinguish between Reader and Contributor roles in session/authentication data
+- **FR-026**: Reader role MUST grant access to view all blog content (stories, highlights, family tips)
+- **FR-027**: Contributor role MUST grant the same access as Reader role (upload functionality reserved for future feature)
+- **FR-028**: System MUST maintain role information throughout the authenticated session
+
+#### Testing & Quality Assurance
+
+- **FR-029**: System MUST include unit tests for critical authentication paths: login flow, logout flow, and session validation
+- **FR-030**: Unit test coverage MUST achieve minimum 60% code coverage for authentication logic
+- **FR-031**: Unit tests MUST verify credential validation, session token generation, role assignment, and session expiry handling
 
 ### Key Entities
 
