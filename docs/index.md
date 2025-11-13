@@ -9,7 +9,7 @@ permalink: /
 # Travel Blog
 {: .fs-9 }
 
-A modern, static travel blog showcasing family adventures around the world.
+A modern, static travel blog showcasing family adventures around the world !
 {: .fs-6 .fw-300 }
 
 [View on GitHub](https://github.com/andreas-ludviksen/firstSpecKitProject){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
