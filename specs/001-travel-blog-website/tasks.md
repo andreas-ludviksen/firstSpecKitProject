@@ -27,8 +27,8 @@ Project uses single Next.js structure:
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create Next.js project with TypeScript and App Router in travel-blog/ directory
-- [ ] T002 Install core dependencies: next@14, react@18, typescript@5, tailwindcss@3
+- [x] T001 Create Next.js project with TypeScript and App Router in travel-blog/ directory
+- [x] T002 Install core dependencies: next@14, react@18, typescript@5, tailwindcss@3
 - [ ] T003 [P] Configure Next.js for static export in next.config.js (output: 'export')
 - [ ] T004 [P] Configure TailwindCSS with mobile-first breakpoints in tailwind.config.js
 - [ ] T005 [P] Setup TypeScript path aliases (@/*) in tsconfig.json
