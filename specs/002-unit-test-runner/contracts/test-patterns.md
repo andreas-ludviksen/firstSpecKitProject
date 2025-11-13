@@ -393,7 +393,7 @@ afterEach(() => {
 
 ## Component Test Examples
 
-### Example 1: Navigation Component Test
+### Example 1: Navigation Component Test (Actual Implementation)
 
 **File**: `src/components/__tests__/Navigation.test.tsx`
 
@@ -402,27 +402,40 @@ import { render, screen } from '@testing-library/react';
 import { usePathname } from 'next/navigation';
 import Navigation from '@/components/Navigation';
 
-// Mock Next.js navigation
+// Mock Next.js navigation at module level
 jest.mock('next/navigation', () => ({
   usePathname: jest.fn(),
 }));
 
 describe('Navigation Component', () => {
   beforeEach(() => {
+    // Clear all mocks before each test for isolation
     jest.clearAllMocks();
   });
 
-  it('renders all navigation links', () => {
+  it('renders the Travel Blog logo', () => {
     (usePathname as jest.Mock).mockReturnValue('/');
     
     render(<Navigation />);
     
-    expect(screen.getByRole('link', { name: /home/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /about/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /contact/i })).toBeInTheDocument();
+    // Query by text content
+    const logo = screen.getByText('Travel Blog');
+    expect(logo).toBeInTheDocument();
   });
 
-  it('highlights the active link based on current pathname', () => {
+  it('renders all active navigation links', () => {
+    (usePathname as jest.Mock).mockReturnValue('/');
+    
+    render(<Navigation />);
+    
+    // Query all links by role
+    expect(screen.getByRole('link', { name: /home/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /about/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /stories/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /highlights/i })).toBeInTheDocument();
+  });
+
+  it('highlights the active link based on pathname', () => {
     (usePathname as jest.Mock).mockReturnValue('/about');
     
     render(<Navigation />);
@@ -430,86 +443,201 @@ describe('Navigation Component', () => {
     const aboutLink = screen.getByRole('link', { name: /about/i });
     const homeLink = screen.getByRole('link', { name: /home/i });
     
-    expect(aboutLink).toHaveClass('active');
-    expect(homeLink).not.toHaveClass('active');
+    // Active link has text-blue-600 class
+    expect(aboutLink).toHaveClass('text-blue-600');
+    // Inactive link has text-gray-700 class
+    expect(homeLink).toHaveClass('text-gray-700');
   });
 
-  it('applies correct href attributes', () => {
+  it('renders mobile menu button', () => {
+    (usePathname as jest.Mock).mockReturnValue('/');
+    
+    render(<Navigation />);
+    
+    // Mobile menu button exists
+    const menuButton = screen.getByRole('button', { name: /toggle menu/i });
+    expect(menuButton).toBeInTheDocument();
+    
+    // Parent div has mobile-specific classes
+    expect(menuButton.parentElement).toHaveClass('md:hidden');
+  });
+
+  it('applies correct href attributes to links', () => {
     (usePathname as jest.Mock).mockReturnValue('/');
     
     render(<Navigation />);
     
     expect(screen.getByRole('link', { name: /home/i })).toHaveAttribute('href', '/');
     expect(screen.getByRole('link', { name: /about/i })).toHaveAttribute('href', '/about');
+    expect(screen.getByRole('link', { name: /stories/i })).toHaveAttribute('href', '/stories');
+    expect(screen.getByRole('link', { name: /highlights/i })).toHaveAttribute('href', '/highlights');
   });
 });
 ```
 
 **Coverage**:
-- ✅ Rendering test
-- ✅ Active state logic
-- ✅ Href attributes
-- ✅ Mocked Next.js dependencies
+- ✅ Logo rendering
+- ✅ All navigation links present
+- ✅ Active link highlighting (conditional CSS classes)
+- ✅ Mobile menu button with responsive classes
+- ✅ Href attributes validation
+- ✅ Next.js usePathname mocking with different return values per test
 
 ---
 
-### Example 2: Button Component with States
+### Example 2: Footer Component Test (Actual Implementation)
 
-**File**: `src/components/__tests__/Button.test.tsx`
+**File**: `src/components/__tests__/Footer.test.tsx`
+
+```typescript
+import { render, screen } from '@testing-library/react';
+import Footer from '@/components/Footer';
+
+describe('Footer Component', () => {
+  it('renders the copyright text', () => {
+    render(<Footer />);
+    
+    // Dynamic year calculation
+    const currentYear = new Date().getFullYear();
+    const copyrightText = `© ${currentYear} Travel Blog. All rights reserved.`;
+    
+    expect(screen.getByText(copyrightText)).toBeInTheDocument();
+  });
+
+  it('has correct styling classes', () => {
+    const { container } = render(<Footer />);
+    
+    // Footer element should have dark background
+    const footer = container.querySelector('footer');
+    expect(footer).toHaveClass('bg-gray-800');
+    expect(footer).toHaveClass('text-white');
+  });
+
+  it('renders with centered content', () => {
+    const { container } = render(<Footer />);
+    
+    const footer = container.querySelector('footer');
+    
+    // Check for centering classes
+    expect(footer?.firstChild).toHaveClass('text-center');
+  });
+});
+```
+
+**Coverage**:
+- ✅ Dynamic copyright text with current year
+- ✅ Styling classes (dark theme)
+- ✅ Layout classes (centered content)
+- ✅ Direct DOM queries with container when needed
+
+---
+
+### Example 3: HighlightPhotoCard with User Events (Actual Implementation)
+
+**File**: `src/components/__tests__/HighlightPhotoCard.test.tsx`
 
 ```typescript
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import Button from '@/components/Button';
+import HighlightPhotoCard from '@/components/HighlightPhotoCard';
+import { HighlightPhoto } from '@/types';
 
-describe('Button Component', () => {
-  it('renders with correct text', () => {
-    render(<Button>Click Me</Button>);
-    expect(screen.getByRole('button', { name: /click me/i })).toBeInTheDocument();
+// Mock next/image locally for this test
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: (props: any) => {
+    // eslint-disable-next-line jsx-a11y/alt-text
+    return <img {...props} />;
+  },
+}));
+
+describe('HighlightPhotoCard Component', () => {
+  const mockPhoto: HighlightPhoto = {
+    id: '1',
+    title: 'Sunset in Santorini',
+    location: 'Santorini, Greece',
+    imageUrl: '/images/santorini.jpg',
+    imageAlt: 'Beautiful sunset over Santorini',
+    date: '2024-06-15',
+    story: 'An unforgettable evening watching the sunset.',
+  };
+
+  it('renders the photo image with correct attributes', () => {
+    render(<HighlightPhotoCard photo={mockPhoto} />);
+    
+    const image = screen.getByRole('img');
+    expect(image).toHaveAttribute('src', mockPhoto.imageUrl);
+    expect(image).toHaveAttribute('alt', mockPhoto.imageAlt);
   });
 
-  it('calls onClick handler when clicked', async () => {
-    const handleClick = jest.fn();
+  it('displays the photo title', () => {
+    render(<HighlightPhotoCard photo={mockPhoto} />);
+    
+    expect(screen.getByText('Sunset in Santorini')).toBeInTheDocument();
+  });
+
+  it('displays the location', () => {
+    render(<HighlightPhotoCard photo={mockPhoto} />);
+    
+    expect(screen.getByText('Santorini, Greece')).toBeInTheDocument();
+  });
+
+  it('displays the story when provided', () => {
+    render(<HighlightPhotoCard photo={mockPhoto} />);
+    
+    expect(screen.getByText('An unforgettable evening watching the sunset.')).toBeInTheDocument();
+  });
+
+  it('does not display story text when story is not provided', () => {
+    const photoWithoutStory = { ...mockPhoto, story: undefined };
+    
+    render(<HighlightPhotoCard photo={photoWithoutStory} />);
+    
+    expect(screen.queryByText('An unforgettable evening watching the sunset.')).not.toBeInTheDocument();
+  });
+
+  it('has hover effect classes', () => {
+    const { container } = render(<HighlightPhotoCard photo={mockPhoto} />);
+    
+    const card = container.firstChild;
+    expect(card).toHaveClass('hover:shadow-xl');
+    expect(card).toHaveClass('transition-shadow');
+  });
+
+  it('simulates hover interaction', async () => {
     const user = userEvent.setup();
+    const { container } = render(<HighlightPhotoCard photo={mockPhoto} />);
     
-    render(<Button onClick={handleClick}>Submit</Button>);
+    const card = container.firstChild as HTMLElement;
     
-    await user.click(screen.getByRole('button', { name: /submit/i }));
+    // Hover over the card
+    await user.hover(card);
     
-    expect(handleClick).toHaveBeenCalledTimes(1);
-  });
-
-  it('does not call onClick when disabled', async () => {
-    const handleClick = jest.fn();
-    const user = userEvent.setup();
+    // Card should still be in document (no state change, just CSS effects)
+    expect(card).toBeInTheDocument();
     
-    render(<Button onClick={handleClick} disabled>Submit</Button>);
+    // Unhover
+    await user.unhover(card);
     
-    const button = screen.getByRole('button', { name: /submit/i });
-    expect(button).toBeDisabled();
-    
-    await user.click(button);
-    expect(handleClick).not.toHaveBeenCalled();
-  });
-
-  it('applies custom className', () => {
-    render(<Button className="custom-class">Test</Button>);
-    expect(screen.getByRole('button', { name: /test/i })).toHaveClass('custom-class');
+    expect(card).toBeInTheDocument();
   });
 });
 ```
 
 **Coverage**:
-- ✅ Basic rendering
-- ✅ Click handler
-- ✅ Disabled state
-- ✅ Custom styling
+- ✅ Image rendering with src and alt attributes
+- ✅ Title and location display
+- ✅ Conditional story rendering (with and without)
+- ✅ Hover effect CSS classes
+- ✅ User event simulation (hover/unhover)
+- ✅ Next.js Image component mocking
+- ✅ TypeScript types for mock data
 
 ---
 
 ## Utility Test Examples
 
-### Example 1: Data Transformation Utility
+### Example 1: Date Formatting Utility (Actual Implementation)
 
 **File**: `src/utils/__tests__/formatDate.test.ts`
 
@@ -518,72 +646,349 @@ import { formatDate } from '@/utils/formatDate';
 
 describe('formatDate utility', () => {
   it('formats date to YYYY-MM-DD', () => {
-    const date = new Date('2025-11-13T10:30:00Z');
-    expect(formatDate(date)).toBe('2025-11-13');
-  });
-
-  it('handles invalid dates gracefully', () => {
-    const invalidDate = new Date('invalid');
-    expect(formatDate(invalidDate)).toBe('Invalid Date');
+    const date = new Date('2024-06-15T12:00:00Z');
+    expect(formatDate(date)).toBe('2024-06-15');
   });
 
   it('formats date with custom separator', () => {
-    const date = new Date('2025-11-13');
-    expect(formatDate(date, '/')).toBe('2025/11/13');
+    const date = new Date('2024-06-15T12:00:00Z');
+    expect(formatDate(date, '/')).toBe('2024/06/15');
+  });
+
+  it('pads single-digit month and day with zeros', () => {
+    const date = new Date('2024-01-05T12:00:00Z');
+    expect(formatDate(date)).toBe('2024-01-05');
+  });
+
+  it('handles invalid dates gracefully', () => {
+    const invalidDate = new Date('invalid-date-string');
+    expect(formatDate(invalidDate)).toBe('Invalid Date');
+  });
+
+  it('handles null input gracefully', () => {
+    // @ts-expect-error Testing invalid input
+    expect(formatDate(null)).toBe('Invalid Date');
+  });
+
+  it('handles undefined input gracefully', () => {
+    // @ts-expect-error Testing invalid input
+    expect(formatDate(undefined)).toBe('Invalid Date');
   });
 });
 ```
 
 **Coverage**:
-- ✅ Happy path
-- ✅ Edge case (invalid input)
-- ✅ Custom configuration
+- ✅ Happy path (standard date formatting)
+- ✅ Custom configuration (separator parameter)
+- ✅ Edge cases (padding, invalid dates, null, undefined)
+- ✅ TypeScript @ts-expect-error for intentional type violations in tests
+
+**Source Code** (`src/utils/formatDate.ts`):
+```typescript
+export function formatDate(date: Date, separator: string = '-'): string {
+  // Handle invalid input
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    return 'Invalid Date';
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}${separator}${month}${separator}${day}`;
+}
+```
 
 ---
 
-### Example 2: Array Processing Utility
+### Example 2: Array Filtering Utilities (Actual Implementation)
 
 **File**: `src/utils/__tests__/filterTravels.test.ts`
 
 ```typescript
-import { filterTravelsByRegion } from '@/utils/filterTravels';
-import { Travel } from '@/types/travel';
+import { filterTravelsByCountry, filterTravelsByCompanion } from '@/utils/filterTravels';
+import { TravelStory } from '@/types';
 
-describe('filterTravelsByRegion', () => {
-  const mockTravels: Travel[] = [
-    { id: '1', region: 'Europe', title: 'Paris', date: '2024-01-01' },
-    { id: '2', region: 'Asia', title: 'Tokyo', date: '2024-02-01' },
-    { id: '3', region: 'Europe', title: 'Rome', date: '2024-03-01' },
+describe('filterTravelsByCountry', () => {
+  const mockTravels: TravelStory[] = [
+    { id: '1', title: 'Paris Adventure', country: 'France', companion: 'Solo', date: '2024-01-15', story: 'Story 1' },
+    { id: '2', title: 'Tokyo Nights', country: 'Japan', companion: 'Friends', date: '2024-02-20', story: 'Story 2' },
+    { id: '3', title: 'French Riviera', country: 'France', companion: 'Spouse', date: '2024-03-10', story: 'Story 3' },
   ];
 
-  it('returns all travels when region is "All"', () => {
-    const result = filterTravelsByRegion(mockTravels, 'All');
+  it('returns all travels when country is "All"', () => {
+    const result = filterTravelsByCountry(mockTravels, 'All');
     expect(result).toHaveLength(3);
+    expect(result).toEqual(mockTravels);
   });
 
-  it('filters travels by specific region', () => {
-    const result = filterTravelsByRegion(mockTravels, 'Europe');
+  it('filters travels by specific country', () => {
+    const result = filterTravelsByCountry(mockTravels, 'France');
     expect(result).toHaveLength(2);
-    expect(result[0].title).toBe('Paris');
-    expect(result[1].title).toBe('Rome');
+    expect(result[0].title).toBe('Paris Adventure');
+    expect(result[1].title).toBe('French Riviera');
+  });
+
+  it('filters are case-insensitive', () => {
+    const result = filterTravelsByCountry(mockTravels, 'france');
+    expect(result).toHaveLength(2);
   });
 
   it('returns empty array when no matches', () => {
-    const result = filterTravelsByRegion(mockTravels, 'Antarctica');
+    const result = filterTravelsByCountry(mockTravels, 'Antarctica');
     expect(result).toHaveLength(0);
   });
 
   it('handles empty input array', () => {
-    const result = filterTravelsByRegion([], 'Europe');
+    const result = filterTravelsByCountry([], 'France');
     expect(result).toHaveLength(0);
+  });
+
+  it('handles empty string filter (returns all)', () => {
+    const result = filterTravelsByCountry(mockTravels, '');
+    expect(result).toHaveLength(3);
+  });
+
+  it('handles null input gracefully', () => {
+    // @ts-expect-error Testing invalid input
+    const result = filterTravelsByCountry(null, 'France');
+    expect(result).toHaveLength(0);
+  });
+});
+
+describe('filterTravelsByCompanion', () => {
+  const mockTravels: TravelStory[] = [
+    { id: '1', title: 'Solo Paris', country: 'France', companion: 'Solo', date: '2024-01-15', story: 'Story 1' },
+    { id: '2', title: 'Friends Tokyo', country: 'Japan', companion: 'Friends', date: '2024-02-20', story: 'Story 2' },
+    { id: '3', title: 'Spouse Rome', country: 'Italy', companion: 'Spouse', date: '2024-03-10', story: 'Story 3' },
+    { id: '4', title: 'Family Barcelona', country: 'Spain', companion: 'Family', date: '2024-04-05', story: 'Story 4' },
+  ];
+
+  it('returns all travels when companion is "All"', () => {
+    const result = filterTravelsByCompanion(mockTravels, 'All');
+    expect(result).toHaveLength(4);
+  });
+
+  it('filters travels by specific companion', () => {
+    const result = filterTravelsByCompanion(mockTravels, 'Solo');
+    expect(result).toHaveLength(1);
+    expect(result[0].title).toBe('Solo Paris');
+  });
+
+  it('filters are case-insensitive', () => {
+    const result = filterTravelsByCompanion(mockTravels, 'friends');
+    expect(result).toHaveLength(1);
+    expect(result[0].title).toBe('Friends Tokyo');
+  });
+
+  it('returns travels with just spouse', () => {
+    const result = filterTravelsByCompanion(mockTravels, 'Spouse');
+    expect(result).toHaveLength(1);
+    expect(result[0].companion).toBe('Spouse');
+  });
+
+  it('returns empty array when no matches', () => {
+    const result = filterTravelsByCompanion(mockTravels, 'Coworker');
+    expect(result).toHaveLength(0);
+  });
+
+  it('handles empty input array', () => {
+    const result = filterTravelsByCompanion([], 'Solo');
+    expect(result).toHaveLength(0);
+  });
+
+  it('handles empty string filter (returns all)', () => {
+    const result = filterTravelsByCompanion(mockTravels, '');
+    expect(result).toHaveLength(4);
   });
 });
 ```
 
 **Coverage**:
-- ✅ Filter logic (multiple cases)
-- ✅ Edge cases (no matches, empty input)
-- ✅ Mock data usage
+- ✅ "All" filter (returns everything)
+- ✅ Specific value filtering
+- ✅ Case-insensitive matching
+- ✅ No matches scenario
+- ✅ Empty input arrays
+- ✅ Empty string filters
+- ✅ Null input handling
+- ✅ Mock data created inline for test isolation
+
+**Source Code** (`src/utils/filterTravels.ts`):
+```typescript
+import { TravelStory } from '@/types';
+
+export function filterTravelsByCountry(
+  travels: TravelStory[],
+  country: string
+): TravelStory[] {
+  if (!travels || travels.length === 0) {
+    return [];
+  }
+
+  if (!country || country === 'All' || country === '') {
+    return travels;
+  }
+
+  return travels.filter(
+    (travel) => travel.country.toLowerCase() === country.toLowerCase()
+  );
+}
+
+export function filterTravelsByCompanion(
+  travels: TravelStory[],
+  companion: string
+): TravelStory[] {
+  if (!travels || travels.length === 0) {
+    return [];
+  }
+
+  if (!companion || companion === 'All' || companion === '') {
+    return travels;
+  }
+
+  return travels.filter(
+    (travel) => travel.companion.toLowerCase() === companion.toLowerCase()
+  );
+}
+```
+
+---
+
+### Example 3: Data Validation Tests (Actual Implementation)
+
+**File**: `src/data/__tests__/travels.test.ts`
+
+```typescript
+import { travelStories } from '@/data/travels';
+
+describe('Travel Stories Data', () => {
+  it('contains travel story entries', () => {
+    expect(travelStories).toBeDefined();
+    expect(Array.isArray(travelStories)).toBe(true);
+    expect(travelStories.length).toBeGreaterThan(0);
+  });
+
+  it('each story has required fields', () => {
+    travelStories.forEach((story) => {
+      // Check all required fields exist
+      expect(story).toHaveProperty('id');
+      expect(story).toHaveProperty('title');
+      expect(story).toHaveProperty('country');
+      expect(story).toHaveProperty('companion');
+      expect(story).toHaveProperty('date');
+      expect(story).toHaveProperty('story');
+
+      // Verify types
+      expect(typeof story.id).toBe('string');
+      expect(typeof story.title).toBe('string');
+      expect(typeof story.country).toBe('string');
+      expect(typeof story.companion).toBe('string');
+      expect(typeof story.date).toBe('string');
+      expect(typeof story.story).toBe('string');
+    });
+  });
+
+  it('all story IDs are unique', () => {
+    const ids = travelStories.map((story) => story.id);
+    const uniqueIds = new Set(ids);
+    expect(uniqueIds.size).toBe(ids.length);
+  });
+});
+```
+
+**Coverage**:
+- ✅ Array existence and length
+- ✅ All required fields present on each item
+- ✅ Type validation for each field
+- ✅ Unique constraint on IDs
+
+---
+
+### Example 4: Highlight Photos Data Validation (Actual Implementation)
+
+**File**: `src/data/__tests__/highlights.test.ts`
+
+```typescript
+import { highlightPhotos } from '@/data/highlights';
+
+describe('Highlight Photos Data', () => {
+  it('contains highlight photo entries', () => {
+    expect(highlightPhotos).toBeDefined();
+    expect(Array.isArray(highlightPhotos)).toBe(true);
+    expect(highlightPhotos.length).toBeGreaterThan(0);
+  });
+
+  it('each photo has required fields', () => {
+    highlightPhotos.forEach((photo) => {
+      expect(photo).toHaveProperty('id');
+      expect(photo).toHaveProperty('title');
+      expect(photo).toHaveProperty('location');
+      expect(photo).toHaveProperty('imageUrl');
+      expect(photo).toHaveProperty('imageAlt');
+      expect(photo).toHaveProperty('date');
+
+      // Verify types
+      expect(typeof photo.id).toBe('string');
+      expect(typeof photo.title).toBe('string');
+      expect(typeof photo.location).toBe('string');
+      expect(typeof photo.imageUrl).toBe('string');
+      expect(typeof photo.imageAlt).toBe('string');
+      expect(typeof photo.date).toBe('string');
+    });
+  });
+
+  it('each photo has a valid date format (YYYY-MM-DD)', () => {
+    highlightPhotos.forEach((photo) => {
+      // Check date format matches YYYY-MM-DD
+      expect(photo.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      
+      // Verify it's a valid date
+      const date = new Date(photo.date);
+      expect(date).toBeInstanceOf(Date);
+      expect(isNaN(date.getTime())).toBe(false);
+    });
+  });
+
+  it('all photo IDs are unique', () => {
+    const ids = highlightPhotos.map((photo) => photo.id);
+    const uniqueIds = new Set(ids);
+    expect(uniqueIds.size).toBe(ids.length);
+  });
+
+  it('all image URLs start with /images/', () => {
+    highlightPhotos.forEach((photo) => {
+      expect(photo.imageUrl).toMatch(/^\/images\//);
+    });
+  });
+
+  it('all photos have alt text for accessibility', () => {
+    highlightPhotos.forEach((photo) => {
+      expect(photo.imageAlt.length).toBeGreaterThan(0);
+      expect(photo.imageAlt).not.toBe('');
+    });
+  });
+
+  it('story field is optional', () => {
+    // Just verify structure - some photos may or may not have story
+    highlightPhotos.forEach((photo) => {
+      if (photo.story) {
+        expect(typeof photo.story).toBe('string');
+      }
+    });
+  });
+});
+```
+
+**Coverage**:
+- ✅ Array validation
+- ✅ Required fields with type checking
+- ✅ Date format validation with regex
+- ✅ Date validity (not just format)
+- ✅ Unique ID constraint
+- ✅ URL format validation
+- ✅ Accessibility check (alt text non-empty)
+- ✅ Optional field handling
 
 ---
 
