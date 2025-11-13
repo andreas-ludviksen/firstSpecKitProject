@@ -14,6 +14,7 @@
 - Q: How should the system handle session expiry while a user is actively browsing? → A: Auto-logout immediately when session expires, redirect to login with message and return URL
 - Q: Should the system allow the same user account to be logged in on multiple devices simultaneously? → A: Allow concurrent logins from multiple devices (no restriction)
 - Q: Which password hashing algorithm should be used? → A: bcrypt with cost factor 10-12
+- Q: What level of Cloudflare configuration documentation should be included as a deliverable for this feature? → A: Step-by-step setup guide with screenshots covering Cloudflare Pages deployment, Workers configuration, and environment variables
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -129,6 +130,14 @@ A visitor attempts to log in with incorrect credentials or encounters authentica
 - **FR-030**: Unit test coverage MUST achieve minimum 60% code coverage for authentication logic
 - **FR-031**: Unit tests MUST verify credential validation, session token generation, role assignment, and session expiry handling
 
+#### Documentation & Deployment
+
+- **FR-032**: Implementation MUST include a step-by-step setup guide for deploying authentication to Cloudflare Pages and Workers
+- **FR-033**: Setup guide MUST include screenshots demonstrating Cloudflare dashboard configuration steps
+- **FR-034**: Documentation MUST cover environment variable configuration for authentication secrets (password hashes, session keys)
+- **FR-035**: Setup guide MUST provide instructions for configuring Cloudflare Workers routes and bindings
+- **FR-036**: Documentation MUST include verification steps to confirm authentication is working correctly after deployment
+
 ### Key Entities
 
 - **User Account**: Represents a person with credentials to access the blog
@@ -163,6 +172,8 @@ A visitor attempts to log in with incorrect credentials or encounters authentica
 - **SC-008**: Logout completes and clears authentication state within 1 second
 - **SC-009**: No user can access protected content without valid authentication (0% unauthorized access)
 - **SC-010**: System handles at least 50 concurrent authenticated users without performance degradation
+- **SC-011**: Deployment documentation enables a developer unfamiliar with Cloudflare to complete setup in under 30 minutes
+- **SC-012**: Setup guide verification steps successfully confirm authentication is working for 100% of deployments
 
 ## Assumptions
 
