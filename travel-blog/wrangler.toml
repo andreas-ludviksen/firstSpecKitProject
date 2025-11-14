@@ -1,0 +1,23 @@
+name = "travel-blog-auth"
+main = "workers/auth/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# KV Namespace for rate limiting
+[[kv_namespaces]]
+binding = "RATE_LIMITER"
+id = "06c6c3b1bb6d455abdf8dea2feef2796"
+
+# D1 Database for user storage
+[[d1_databases]]
+binding = "DB"
+database_name = "travel-blog-users"
+database_id = "13a81283-7ad4-4879-8287-c435eac578e4"
+
+# Environment variables (secrets set separately via wrangler secret put)
+[vars]
+NODE_ENV = "production"
+
+# Routes configuration
+# After deployment, you'll configure routes in Cloudflare dashboard
+# or add them here with your domain

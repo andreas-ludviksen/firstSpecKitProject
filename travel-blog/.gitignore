@@ -34,3 +34,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# cloudflare workers
+/workers/dist/
+/workers/node_modules/
+.wrangler/
+wrangler.toml.backup
+
+# User credentials (migrated to D1 database)
+workers/users.json
+
+# environment variables
+.env
+.env.local
+.env.*.local
+.dev.vars

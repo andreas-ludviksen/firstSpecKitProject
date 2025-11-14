@@ -3,9 +3,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { navigationItems } from '@/data/navigation';
+import { useAuth } from '@/hooks/useAuth';
+import LogoutButton from './LogoutButton';
 
 export default function Navigation() {
   const pathname = usePathname();
+  const { isAuthenticated, user, isLoading } = useAuth();
 
   return (
     <nav className="bg-white shadow-md">
@@ -38,6 +41,32 @@ export default function Navigation() {
                   );
                 })}
             </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            {!isLoading && (
+              <>
+                {isAuthenticated && user ? (
+                  <>
+                    <span className="text-sm text-gray-600">
+                      Welcome, {user.displayName || user.username}
+                      {user.role === 'contributor' && (
+                        <span className="ml-1 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                          Contributor
+                        </span>
+                      )}
+                    </span>
+                    <LogoutButton />
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                  >
+                    Login
+                  </Link>
+                )}
+              </>
+            )}
           </div>
           <div className="md:hidden">
             <button

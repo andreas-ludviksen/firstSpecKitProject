@@ -1,0 +1,359 @@
+# User Management Guide
+
+How to add, update, and remove users in the Cloudflare D1 database.
+
+---
+
+## Adding a New User
+
+### Step 1: Generate Password Hash
+
+**Bash/Linux/macOS:**
+```bash
+cd travel-blog
+npm run generate-hash
+```
+
+**PowerShell (with Execution Policy restrictions):**
+```powershell
+cd travel-blog
+node -e "require('child_process').execSync('npm run generate-hash', {stdio: 'inherit'})"
+```
+
+When prompted, enter the password for the new user (e.g., `securepassword123`).
+
+Or provide password as argument (less secure - visible in terminal history):
+
+**Bash:**
+```bash
+npm run generate-hash mypassword123
+```
+
+**PowerShell:**
+```powershell
+node -e "require('child_process').execSync('npm run generate-hash mypassword123', {stdio: 'inherit'})"
+```
+
+**Example output:**
+```
+Enter password to hash: ********
+Hashing password with cost factor 10...
+
+Bcrypt hash (cost factor 10):
+$2b$10$3uY2msEgvhygThAlzDzMBetHrD7GSffYj.W8WZ3I9VVlTmepwdPoi
+
+Copy this hash to use in SQL INSERT statement
+```
+
+**⚠️ Important**: Copy the hash immediately - you won't be able to retrieve it later.
+
+### Step 2: Insert User into Database
+
+**Bash/Linux/macOS:**
+```bash
+# Replace values:
+# - henrik = username
+# - $2b$10$... = hash from Step 1
+# - contributor = role (either 'reader' or 'contributor')
+# - Henrik = display name
+
+wrangler d1 execute travel-blog-users --remote --command="INSERT INTO users (username, password_hash, role, display_name) VALUES ('henrik', '\$2b\$10\$3uY2msEgvhygThAlzDzMBetHrD7GSffYj.W8WZ3I9VVlTmepwdPoi', 'reader', 'Henrik')"
+```
+
+**PowerShell:**
+```powershell
+# 1. Generate hash
+npm run generate-hash
+
+# 2. Create temporary SQL file (replace HASH_HERE with output from step 1)
+# Note: PowerShell treats $ as variable, so use single quotes to prevent expansion
+'INSERT INTO users (username, password_hash, role, display_name) VALUES (''henrik'', ''$2b$10$HASH_HERE'', ''reader'', ''Henrik'');' | Set-Content -Path temp-insert.sql -NoNewline
+
+# 3. Execute
+node -e "require('child_process').execSync('npx wrangler d1 execute travel-blog-users --remote --file=temp-insert.sql', {stdio: 'inherit'})"
+
+# 4. Cleanup
+Remove-Item temp-insert.sql
+```
+
+**Expected output:**
+```
+🚣 Executed 1 queries in 2.5ms (0 rows read, 1 rows written)
+```
+
+### Step 3: Verify User Was Added
+
+**Bash:**
+```bash
+wrangler d1 execute travel-blog-users --remote --command="SELECT username, role, display_name FROM users WHERE username='henrik'"
+```
+
+**PowerShell:**
+```powershell
+'SELECT username, role, display_name FROM users WHERE username=''henrik'';' | Set-Content -Path temp-verify.sql -NoNewline
+
+node -e "require('child_process').execSync('npx wrangler d1 execute travel-blog-users --remote --file=temp-verify.sql', {stdio: 'inherit'})"
+
+Remove-Item temp-verify.sql
+```
+
+**Expected output:**
+```
+┌──────────┬─────────────┬──────────────┐
+│ username │ role        │ display_name │
+├──────────┼─────────────┼──────────────┤
+│ henrik   │ contributor │ Henrik       │
+└──────────┴─────────────┴──────────────┘
+```
+
+---
+
+## User Roles
+
+- **`reader`**: Can view protected content, cannot upload or edit
+- **`contributor`**: Can view, upload, and edit content (future features)
+
+---
+
+## Updating a User
+
+### Change User Role
+
+**Bash:**
+```bash
+wrangler d1 execute travel-blog-users --remote --command="UPDATE users SET role='contributor' WHERE username='henrik'"
+```
+
+**PowerShell:**
+```powershell
+'UPDATE users SET role=''contributor'' WHERE username=''henrik'';' | Set-Content -Path temp-update.sql -NoNewline
+
+node -e "require('child_process').execSync('npx wrangler d1 execute travel-blog-users --remote --file=temp-update.sql', {stdio: 'inherit'})"
+
+Remove-Item temp-update.sql
+```
+
+### Change Display Name
+
+**Bash:**
+```bash
+wrangler d1 execute travel-blog-users --remote --command="UPDATE users SET display_name='Henrik Nielsen' WHERE username='henrik'"
+```
+
+**PowerShell:**
+```powershell
+'UPDATE users SET display_name=''Henrik Nielsen'' WHERE username=''henrik'';' | Set-Content -Path temp-update.sql -NoNewline
+
+node -e "require('child_process').execSync('npx wrangler d1 execute travel-blog-users --remote --file=temp-update.sql', {stdio: 'inherit'})"
+
+Remove-Item temp-update.sql
+```
+
+### Reset Password
+
+**Bash:**
+```bash
+# 1. Generate new hash
+npm run generate-hash
+
+# 2. Update password_hash
+wrangler d1 execute travel-blog-users --remote --command="UPDATE users SET password_hash='\$2b\$10\$NEW_HASH_HERE' WHERE username='henrik'"
+```
+
+**PowerShell:**
+```powershell
+# 1. Generate new hash
+node -e "require('child_process').execSync('npm run generate-hash', {stdio: 'inherit'})"
+
+# 2. Create SQL file with new hash (replace with your actual hash)
+@"
+**PowerShell:**
+```powershell
+# 1. Generate new hash
+npm run generate-hash
+
+# 2. Create temp SQL file (replace HASH_HERE with output from step 1)
+# Note: Use single quotes to prevent $ expansion
+'UPDATE users SET password_hash=''$2b$10$HASH_HERE'' WHERE username=''henrik'';' | Set-Content -Path temp-update.sql -NoNewline
+
+# 3. Execute
+node -e "require('child_process').execSync('npx wrangler d1 execute travel-blog-users --remote --file=temp-update.sql', {stdio: 'inherit'})"
+
+# 4. Cleanup
+Remove-Item temp-update.sql
+```
+"@ | Out-File -FilePath temp-update.sql -Encoding utf8
+
+# 3. Execute
+node -e "require('child_process').execSync('npx wrangler d1 execute travel-blog-users --remote --file=temp-update.sql', {stdio: 'inherit'})"
+
+# 4. Cleanup
+Remove-Item temp-update.sql
+```
+
+---
+
+## Removing a User
+
+**Bash:**
+```bash
+wrangler d1 execute travel-blog-users --remote --command="DELETE FROM users WHERE username='henrik'"
+```
+
+**PowerShell:**
+```powershell
+'DELETE FROM users WHERE username=''henrik'';' | Set-Content -Path temp-delete.sql -NoNewline
+
+node -e "require('child_process').execSync('npx wrangler d1 execute travel-blog-users --remote --file=temp-delete.sql', {stdio: 'inherit'})"
+
+Remove-Item temp-delete.sql
+```
+
+**⚠️ Warning**: This is permanent. Consider deactivating instead (future feature: `active` column).
+
+---
+
+## Listing All Users
+
+**Bash:**
+```bash
+# List all users (without password hashes)
+wrangler d1 execute travel-blog-users --remote --command="SELECT username, role, display_name, created_at FROM users ORDER BY created_at DESC"
+```
+
+**PowerShell:**
+```powershell
+# List all users (without password hashes)
+'SELECT username, role, display_name, created_at FROM users ORDER BY created_at DESC;' | Set-Content -Path temp-list.sql -NoNewline
+
+node -e "require('child_process').execSync('npx wrangler d1 execute travel-blog-users --remote --file=temp-list.sql', {stdio: 'inherit'})"
+
+Remove-Item temp-list.sql
+```
+
+**Example output:**
+```
+┌─────────────────┬─────────────┬──────────────────┬─────────────────────┐
+│ username        │ role        │ display_name     │ created_at          │
+├─────────────────┼─────────────┼──────────────────┼─────────────────────┤
+│ henrik          │ contributor │ Henrik           │ 2025-11-14 13:00:00 │
+│ testcontributor │ contributor │ Test Contributor │ 2025-11-13 00:00:00 │
+│ testuser        │ reader      │ Test User        │ 2025-11-13 00:00:00 │
+└─────────────────┴─────────────┴──────────────────┴─────────────────────┘
+```
+
+---
+
+## Security Best Practices
+
+### ✅ DO:
+
+- Generate password hashes using `npm run generate-hash`
+- Use strong passwords (8+ characters, mix of letters, numbers, symbols)
+- Execute SQL commands directly via `wrangler d1 execute`
+- Keep terminal history private (clear after adding users)
+
+### ❌ DON'T:
+
+- Commit password hashes to git (even hashed passwords)
+- Share bcrypt hashes publicly
+- Reuse passwords across users
+- Store plaintext passwords anywhere
+
+---
+
+## Troubleshooting
+
+### Error: "UNIQUE constraint failed: users.username"
+
+The username already exists. Choose a different username or update the existing user.
+
+### Error: "CHECK constraint failed: users.role"
+
+Role must be either `'reader'` or `'contributor'` (case-sensitive).
+
+### Error: "Escape character '$' is not recognized"
+
+In PowerShell, escape `$` symbols in the hash with `\$`:
+```powershell
+# Wrong:
+'$2b$10$abc...'
+
+# Correct:
+'\$2b\$10\$abc...'
+```
+
+When using the node wrapper, quotes are already escaped properly in the examples above.
+
+### PowerShell Execution Policy Error
+
+If you get "running scripts is disabled on this system":
+
+**Solution 1 - Use node wrapper (recommended):**
+```powershell
+node -e "require('child_process').execSync('npm run generate-hash', {stdio: 'inherit'})"
+```
+
+**Solution 2 - Bypass execution policy for single command:**
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass "npm run generate-hash"
+```
+
+**Solution 3 - Change execution policy (admin required):**
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+### Database is Empty
+
+Run the seed migration:
+
+**Bash:**
+```bash
+wrangler d1 execute travel-blog-users --remote --file=workers/migrations/0002_seed_test_users.sql
+```
+
+**PowerShell:**
+```powershell
+node -e "require('child_process').execSync('npx wrangler d1 execute travel-blog-users --remote --file=workers/migrations/0002_seed_test_users.sql', {stdio: 'inherit'})"
+```
+
+---
+
+## Testing User Login
+
+After adding a user, test login via the deployed site:
+
+1. Go to https://travel-blog-4my.pages.dev/login
+2. Enter username and password
+3. Should redirect to home page with "Welcome, [Display Name]"
+
+Or test via API:
+
+```bash
+Invoke-WebRequest -Uri "https://travel-blog-auth.andreas-e-ludviksen.workers.dev/api/auth/login" -Method POST -Headers @{"Content-Type"="application/json"} -Body '{"username":"henrik","password":"securepassword123"}' | Select-Object -ExpandProperty Content
+```
+
+**Expected response:**
+```json
+{
+  "success": true,
+  "user": {
+    "username": "henrik",
+    "role": "contributor",
+    "displayName": "Henrik"
+  },
+  "expiresAt": "2025-11-15T13:00:00.000Z"
+}
+```
+
+---
+
+## Current Users
+
+| Username        | Role        | Display Name     | Added      |
+|-----------------|-------------|------------------|------------|
+| testuser        | reader      | Test User        | 2025-11-13 |
+| testcontributor | contributor | Test Contributor | 2025-11-13 |
+
+**Note**: Production users not listed here for security. Use `wrangler d1 execute` to query database.

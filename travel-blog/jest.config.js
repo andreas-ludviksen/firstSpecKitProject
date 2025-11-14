@@ -24,6 +24,33 @@ const customJestConfig = {
     '**/?(*.)+(spec|test).[jt]s?(x)',
   ],
 
+  // Projects for different test environments
+  projects: [
+    {
+      displayName: 'client',
+      testEnvironment: 'jsdom',
+      testMatch: ['<rootDir>/src/**/*.test.[jt]s?(x)'],
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+    },
+    {
+      displayName: 'workers',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/tests/workers/**/*.test.[jt]s'],
+      preset: 'ts-jest',
+      transform: {
+        '^.+\\.tsx?$': ['ts-jest', {
+          tsconfig: {
+            module: 'commonjs',
+            esModuleInterop: true,
+          },
+        }],
+      },
+      moduleNameMapper: {
+        '^@workers/(.*)$': '<rootDir>/workers/$1',
+      },
+    },
+  ],
+
   // Coverage configuration
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',

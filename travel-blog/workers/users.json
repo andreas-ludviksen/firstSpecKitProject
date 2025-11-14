@@ -1,0 +1,18 @@
+{
+  "users": [
+    {
+      "username": "testuser",
+      "passwordHash": "$2b$10$3uY2msEgvhygThAlzDzMBetHrD7GSffYj.W8WZ3I9VVlTmepwdPoi",
+      "role": "reader",
+      "createdAt": "2025-11-13T00:00:00Z",
+      "displayName": "Test User"
+    },
+    {
+      "username": "testcontributor",
+      "passwordHash": "$2b$10$EMFQbA1QWJdpC4NBDVgtUuE2VW53uv/zYP1PD3Pz/X0ucPxYFzJBS",
+      "role": "contributor",
+      "createdAt": "2025-11-13T00:00:00Z",
+      "displayName": "Test Contributor"
+    }
+  ]
+}

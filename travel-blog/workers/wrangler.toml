@@ -1,0 +1,17 @@
+name = "travel-blog-auth"
+main = "auth/index.ts"
+compatibility_date = "2025-11-13"
+
+# Workers configuration
+workers_dev = true  # Enable *.workers.dev preview URL
+
+# Environment variables (secrets set via CLI)
+[vars]
+NODE_ENV = "development"
+
+# KV namespace for rate limiting (create with: wrangler kv:namespace create RATE_LIMIT_KV)
+# Uncomment after creating KV namespace:
+# [[kv_namespaces]]
+# binding = "RATE_LIMIT_KV"
+# id = "YOUR_KV_NAMESPACE_ID"
+# preview_id = "YOUR_PREVIEW_KV_NAMESPACE_ID"
