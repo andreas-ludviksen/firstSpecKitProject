@@ -24,13 +24,14 @@ const customJestConfig = {
     '**/?(*.)+(spec|test).[jt]s?(x)',
   ],
 
-  // Projects for different test environments
+  // Separate test environments
   projects: [
     {
       displayName: 'client',
       testEnvironment: 'jsdom',
       testMatch: ['<rootDir>/src/**/*.test.[jt]s?(x)'],
       setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+      // Don't specify transform - let Next.js handle it
     },
     {
       displayName: 'workers',
