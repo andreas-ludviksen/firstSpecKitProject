@@ -188,7 +188,7 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
       `session=${token}`,
       'HttpOnly',
       'Secure',
-      'SameSite=Strict',
+      'SameSite=None', // Allow cross-site cookies for Pages <-> Workers
       `Max-Age=${expiresIn}`,
       'Path=/',
     ].join('; ');

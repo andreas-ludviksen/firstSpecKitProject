@@ -6,11 +6,9 @@
  */
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { logout } from '@/lib/auth-api';
 
 export default function LogoutButton() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogout = async () => {
@@ -19,18 +17,13 @@ export default function LogoutButton() {
     try {
       await logout();
       
-      // Redirect to login page
-      router.push('/login');
-      router.refresh(); // Refresh to clear auth state
+      // Force full page reload to clear auth state
+      window.location.href = '/login';
     } catch (err) {
       console.error('Logout failed:', err);
       
       // Even if logout fails, redirect to login
-      // (fail-open for better UX)
-      router.push('/login');
-      router.refresh();
-    } finally {
-      setIsLoading(false);
+      window.location.href = '/login';
     }
   };
 

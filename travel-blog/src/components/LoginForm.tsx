@@ -5,7 +5,6 @@
  */
 
 import { useState, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
 import { login } from '@/lib/auth-api';
 
 interface LoginFormProps {
@@ -13,7 +12,6 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({ redirectPath }: LoginFormProps) {
-  const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -42,10 +40,9 @@ export default function LoginForm({ redirectPath }: LoginFormProps) {
       const result = await login({ username, password, rememberMe });
 
       if (result.success) {
-        // Login successful - redirect to requested page or home
+        // Login successful - force full page reload to update auth state
         const destination = redirectPath || '/';
-        router.push(destination);
-        router.refresh(); // Refresh to update auth state
+        window.location.href = destination;
       } else {
         // Login failed - display error
         if (result.error === 'RATE_LIMITED' && result.retryAfter) {
@@ -55,7 +52,7 @@ export default function LoginForm({ redirectPath }: LoginFormProps) {
           setError(result.message);
         }
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);

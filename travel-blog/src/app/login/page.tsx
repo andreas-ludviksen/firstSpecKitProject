@@ -3,24 +3,16 @@
  * Displays login form for authentication
  */
 
-import { Metadata } from 'next';
+'use client';
+
+import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import LoginForm from '@/components/LoginForm';
 
-export const metadata: Metadata = {
-  title: 'Login - Travel Blog',
-  description: 'Login to access the travel blog',
-};
-
-interface LoginPageProps {
-  searchParams: {
-    expired?: string;
-    redirect?: string;
-  };
-}
-
-export default function LoginPage({ searchParams }: LoginPageProps) {
-  const isExpired = searchParams.expired === 'true';
-  const redirectPath = searchParams.redirect;
+function LoginContent() {
+  const searchParams = useSearchParams();
+  const isExpired = searchParams.get('expired') === 'true';
+  const redirectPath = searchParams.get('redirect') || undefined;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -48,5 +40,17 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
         <LoginForm redirectPath={redirectPath} />
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">Loading...</div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }

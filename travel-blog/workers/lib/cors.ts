@@ -16,8 +16,7 @@ const DEFAULT_CONFIG: CORSConfig = {
   allowedOrigins: [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    // Add production domain after deployment:
-    // 'https://your-blog.pages.dev'
+    'https://travel-blog-4my.pages.dev', // Production Cloudflare Pages URL
   ],
   allowCredentials: true, // Required for cookies
   allowedMethods: ['GET', 'POST', 'OPTIONS'],
@@ -40,9 +39,15 @@ export function addCORSHeaders(
   const origin = request.headers.get('Origin');
   const newResponse = new Response(response.body, response);
 
-  // Check if origin is allowed
-  if (origin && config.allowedOrigins.includes(origin)) {
-    newResponse.headers.set('Access-Control-Allow-Origin', origin);
+  // Check if origin is allowed (including wildcard matching for Pages deployments)
+  if (origin) {
+    const isAllowed = config.allowedOrigins.includes(origin) || 
+                     config.allowedOrigins.includes('*') ||
+                     origin.endsWith('.travel-blog-4my.pages.dev'); // Allow all deployment URLs
+    
+    if (isAllowed) {
+      newResponse.headers.set('Access-Control-Allow-Origin', origin);
+    }
   } else if (config.allowedOrigins.includes('*')) {
     newResponse.headers.set('Access-Control-Allow-Origin', '*');
   }
@@ -75,8 +80,14 @@ export function handleCORSPreflight(
     'Access-Control-Max-Age': config.maxAge.toString(),
   };
 
-  if (origin && config.allowedOrigins.includes(origin)) {
-    headers['Access-Control-Allow-Origin'] = origin;
+  if (origin) {
+    const isAllowed = config.allowedOrigins.includes(origin) || 
+                     config.allowedOrigins.includes('*') ||
+                     origin.endsWith('.travel-blog-4my.pages.dev'); // Allow all deployment URLs
+    
+    if (isAllowed) {
+      headers['Access-Control-Allow-Origin'] = origin;
+    }
   } else if (config.allowedOrigins.includes('*')) {
     headers['Access-Control-Allow-Origin'] = '*';
   }

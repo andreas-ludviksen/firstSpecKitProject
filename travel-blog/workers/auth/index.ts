@@ -3,11 +3,11 @@
  * Routes authentication requests to appropriate handlers
  */
 
-import { Router } from 'itty-router';
+import { Router, error, json } from 'itty-router';
 import { handleCORSPreflight, addCORSHeaders } from '../lib/cors';
 import type { Env } from '../types';
 
-// Import route handlers (will be implemented next)
+// Import route handlers
 import { handleLogin } from './login';
 import { handleLogout } from './logout';
 import { handleVerify } from './verify-session';
@@ -19,9 +19,7 @@ const router = Router();
  * Health check endpoint
  */
 router.get('/api/auth/health', () => {
-  return new Response(JSON.stringify({ status: 'ok', service: 'auth' }), {
-    headers: { 'Content-Type': 'application/json' },
-  });
+  return json({ status: 'ok', service: 'auth' });
 });
 
 /**
@@ -37,49 +35,25 @@ router.get('/api/auth/verify', handleVerify);
 router.options('*', (request) => handleCORSPreflight(request));
 
 /**
- * 404 handler for unknown routes
+ * 404 handler
  */
-router.all('*', () => {
-  return new Response(
-    JSON.stringify({
-      success: false,
-      error: 'NOT_FOUND',
-      message: 'Endpoint not found',
-    }),
-    {
-      status: 404,
-      headers: { 'Content-Type': 'application/json' },
-    }
-  );
-});
+router.all('*', () => error(404, 'Endpoint not found'));
 
 /**
- * Main Workers fetch handler
- * Exported as default for Cloudflare Workers runtime
+ * Export as service worker format with CORS wrapper
  */
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: any): Promise<Response> {
     try {
-      // Route the request
-      const response = await router.handle(request, env, ctx);
-      
-      // Add CORS headers to response
+      const response = await router.fetch(request, env, ctx);
       return addCORSHeaders(response, request);
-    } catch (error) {
-      console.error('Unhandled error in worker:', error);
-      
-      const errorResponse = new Response(
-        JSON.stringify({
-          success: false,
-          error: 'INTERNAL_ERROR',
-          message: 'An unexpected error occurred',
-        }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-      
+    } catch (err) {
+      console.error('Worker error:', err);
+      const errorResponse = json({ 
+        success: false, 
+        error: 'INTERNAL_ERROR',
+        message: 'An unexpected error occurred' 
+      }, { status: 500 });
       return addCORSHeaders(errorResponse, request);
     }
   },

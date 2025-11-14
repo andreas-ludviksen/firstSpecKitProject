@@ -29,11 +29,12 @@ export async function handleLogout(): Promise<Response> {
 
     // Clear session cookie by setting Max-Age=0
     // Path=/ ensures it clears the cookie for the entire domain
+    // SameSite=None to match the login cookie setting (cross-site cookies)
     const cookieValue = [
       'session=',
       'HttpOnly',
       'Secure',
-      'SameSite=Strict',
+      'SameSite=None',
       'Max-Age=0',
       'Path=/',
     ].join('; ');
@@ -67,7 +68,7 @@ export async function handleLogout(): Promise<Response> {
       'session=',
       'HttpOnly',
       'Secure',
-      'SameSite=Strict',
+      'SameSite=None',
       'Max-Age=0',
       'Path=/',
     ].join('; ');

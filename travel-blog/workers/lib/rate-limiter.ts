@@ -3,6 +3,9 @@
  * Tracks failed login attempts with 15-minute TTL
  */
 
+// Type alias for KV namespace to avoid import issues with Next.js build
+type KVNamespace = any;
+
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_DURATION = 15 * 60; // 15 minutes in seconds
 
@@ -105,7 +108,7 @@ export async function clearFailedAttempts(
     
     // Delete all keys for this username
     await Promise.all(
-      listResult.keys.map(key => kv.delete(key.name))
+      listResult.keys.map((key: any) => kv.delete(key.name))
     );
   } catch (error) {
     console.error('Failed to clear attempts:', error);
