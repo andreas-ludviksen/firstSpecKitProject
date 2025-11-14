@@ -79,7 +79,7 @@ export async function handleVerify(request: Request, env: Env): Promise<Response
     const payload = result.payload!;
 
     // Look up user to get displayName
-    const user = findUserByUsername(payload.sub);
+    const user = await findUserByUsername(env.DB, payload.sub);
 
     if (!user) {
       console.error('[VERIFY] User not found after session verification:', { 

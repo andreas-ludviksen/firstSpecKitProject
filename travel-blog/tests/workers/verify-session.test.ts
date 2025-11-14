@@ -7,8 +7,35 @@ import { handleVerify } from '../../workers/auth/verify-session';
 import { generateToken } from '../../workers/lib/jwt';
 import * as jwt from 'jsonwebtoken';
 
+// Mock D1 database
+const mockDB = {
+  prepare: (query: string) => ({
+    bind: (...args: any[]) => ({
+      first: async () => {
+        // Mock user lookup
+        if (query.includes('SELECT') && query.includes('users')) {
+          const username = args[0]?.toLowerCase();
+          if (username === 'testuser') {
+            return {
+              id: 1,
+              username: 'testuser',
+              passwordHash: '$2b$10$3uY2msEgvhygThAlzDzMBetHrD7GSffYj.W8WZ3I9VVlTmepwdPoi',
+              role: 'reader',
+              displayName: 'Test User',
+              createdAt: '2025-11-13T00:00:00Z',
+            };
+          }
+          return null;
+        }
+        return null;
+      },
+    }),
+  }),
+};
+
 const mockEnv = {
   JWT_SECRET: 'test-jwt-secret',
+  DB: mockDB as any,
   NODE_ENV: 'test',
 };
 

@@ -16,9 +16,10 @@ This guide walks you through deploying the Travel Blog authentication system to 
 1. [Prerequisites](#prerequisites)
 2. [Step 1: Create Cloudflare Account](#step-1-create-cloudflare-account)
 3. [Step 2: Install Wrangler CLI](#step-2-install-wrangler-cli)
-4. [Step 3: Authenticate Wrangler](#step-3-authenticate-wrangler)
-5. [Step 4: Create KV Namespace](#step-4-create-kv-namespace)
-6. [Step 5: Configure Environment Variables](#step-5-configure-environment-variables)
+3. [Step 3: Authenticate Wrangler](#step-3-authenticate-wrangler)
+4. [Step 4: Create D1 Database](#step-4-create-d1-database)
+5. [Step 5: Create KV Namespace (Rate Limiting)](#step-5-create-kv-namespace-rate-limiting)
+6. [Step 6: Configure Environment Variables](#step-6-configure-environment-variables)
 7. [Step 6: Deploy Workers](#step-6-deploy-workers)
 8. [Step 7: Deploy Next.js to Pages](#step-7-deploy-nextjs-to-pages)
 9. [Step 8: Configure CORS](#step-8-configure-cors)
@@ -129,7 +130,88 @@ Getting User settings...
 
 ---
 
-## Step 4: Create KV Namespace
+## Step 4: Create D1 Database
+
+D1 is Cloudflare's SQL database for user storage. It replaces static JSON files with a proper database.
+
+### 4.1 Create D1 Database
+
+```bash
+cd travel-blog
+wrangler d1 create travel-blog-users
+```
+
+Expected output:
+```
+ ⛅️ wrangler 4.x.x
+-------------------
+✅ Successfully created DB 'travel-blog-users' in region EEUR
+Created your new D1 database.
+
+[[d1_databases]]
+binding = "DB"
+database_name = "travel-blog-users"
+database_id = "13a81283-7ad4-4879-8287-c435eac578e4"
+```
+
+**🔑 Important**: Copy the `database_id` value!
+
+### 4.2 Update wrangler.toml
+
+Add the D1 binding to `wrangler.toml`:
+
+```toml
+# D1 Database for user storage
+[[d1_databases]]
+binding = "DB"
+database_name = "travel-blog-users"
+database_id = "YOUR_DATABASE_ID_HERE"  # ← Replace with your database ID
+```
+
+### 4.3 Run Database Migrations
+
+Create the users table:
+
+```bash
+wrangler d1 execute travel-blog-users --remote --file=workers/migrations/0001_create_users_table.sql
+```
+
+Seed test users:
+
+```bash
+wrangler d1 execute travel-blog-users --remote --file=workers/migrations/0002_seed_test_users.sql
+```
+
+Expected output:
+```
+🚣 Executed 3 queries in 3.09ms (6 rows read, 7 rows written)
+```
+
+### 4.4 Verify Database
+
+```bash
+wrangler d1 execute travel-blog-users --remote --command="SELECT username, role FROM users"
+```
+
+Expected output:
+```
+┌────────────────┬─────────────┐
+│ username       │ role        │
+├────────────────┼─────────────┤
+│ testuser       │ reader      │
+│ testcontributor│ contributor │
+└────────────────┴─────────────┘
+```
+
+**💡 Why D1?**
+- Proper database vs static JSON files
+- User credentials not committed to git
+- Ready for future features (blog posts, media metadata)
+- Free tier: 100K reads/day, 50K writes/day
+
+---
+
+## Step 5: Create KV Namespace (Rate Limiting)
 
 KV (Key-Value) storage is used for rate limiting failed login attempts.
 

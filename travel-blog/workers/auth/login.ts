@@ -112,7 +112,7 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
     }
 
     // Look up user
-    const user = findUserByUsername(username);
+    const user = await findUserByUsername(env.DB, username);
 
     // Timing attack prevention: verify password even if user doesn't exist
     // This ensures both paths take similar time

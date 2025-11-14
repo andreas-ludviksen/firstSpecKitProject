@@ -5,10 +5,47 @@
 
 import { handleLogin } from '../../workers/auth/login';
 
+// Mock D1 database
+const mockDB = {
+  prepare: (query: string) => ({
+    bind: (...args: any[]) => ({
+      first: async () => {
+        // Mock user lookup
+        if (query.includes('SELECT') && query.includes('users')) {
+          const username = args[0]?.toLowerCase();
+          if (username === 'testuser') {
+            return {
+              id: 1,
+              username: 'testuser',
+              passwordHash: '$2b$10$3uY2msEgvhygThAlzDzMBetHrD7GSffYj.W8WZ3I9VVlTmepwdPoi',
+              role: 'reader',
+              displayName: 'Test User',
+              createdAt: '2025-11-13T00:00:00Z',
+            };
+          }
+          if (username === 'testcontributor') {
+            return {
+              id: 2,
+              username: 'testcontributor',
+              passwordHash: '$2b$10$EMFQbA1QWJdpC4NBDVgtUuE2VW53uv/zYP1PD3Pz/X0ucPxYFzJBS',
+              role: 'contributor',
+              displayName: 'Test Contributor',
+              createdAt: '2025-11-13T00:00:00Z',
+            };
+          }
+          return null; // User not found
+        }
+        return null;
+      },
+    }),
+  }),
+};
+
 // Mock environment
 const mockEnv = {
   JWT_SECRET: 'test-jwt-secret',
-  RATE_LIMIT_KV: null as any, // Will use mock KV when implementing rate limiting
+  RATE_LIMIT_KV: null as any,
+  DB: mockDB as any,
   NODE_ENV: 'test',
 };
 
@@ -40,7 +77,7 @@ describe('POST /api/auth/login', () => {
       expect(setCookie).toContain('session=');
       expect(setCookie).toContain('HttpOnly');
       expect(setCookie).toContain('Secure');
-      expect(setCookie).toContain('SameSite=Strict');
+      expect(setCookie).toContain('SameSite=None'); // Changed from Strict to None for cross-site support
     });
     
     it('should return 200 for valid contributor credentials', async () => {

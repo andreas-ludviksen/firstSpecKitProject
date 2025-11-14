@@ -86,10 +86,13 @@ travel-blog/
 │   │   ├── password.ts   # bcrypt password hashing
 │   │   ├── sanitize.ts   # Input validation/sanitization
 │   │   ├── rate-limiter.ts    # Failed login tracking (KV)
-│   │   ├── user-service.ts    # User data management
+│   │   ├── user-service.ts    # User data management (D1)
 │   │   └── cors.ts       # CORS configuration
+│   ├── migrations/       # D1 database migrations
+│   │   ├── 0001_create_users_table.sql
+│   │   └── 0002_seed_test_users.sql
 │   ├── types.ts          # Worker type definitions
-│   ├── users.json        # User credentials (hashed passwords)
+│   └── users.json        # Legacy (migrated to D1)
 │   └── wrangler.toml     # Cloudflare Workers config
 ├── tests/                # Test suites
 │   └── workers/          # Workers unit tests (42 tests, 57.83% coverage)

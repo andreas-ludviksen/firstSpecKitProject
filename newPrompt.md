@@ -89,11 +89,17 @@ Frontend:
 
 Authentication Backend:
 - Cloudflare Workers for API endpoints (login, logout, verify-session)
+- Cloudflare D1 (SQLite) for user storage
 - Wrangler CLI for Workers deployment
 - itty-router 5.x for routing in Workers
 - bcryptjs 3.x for password hashing (cost factor 10)
 - jsonwebtoken 9.x for JWT session tokens (HS256 algorithm)
-- HTTP-only cookies for session storage (secure, SameSite=Strict)
+- HTTP-only cookies for session storage (secure, SameSite=None for cross-site)
+
+Storage:
+- Cloudflare D1 database for user credentials (replaces static JSON)
+- Cloudflare KV for rate limiting (failed login attempts)
+- Future-ready for blog posts and media metadata
 
 Testing:
 - Jest 29.x as test runner
@@ -122,15 +128,20 @@ travel-blog/
 │   ├── components/       # Reusable React components
 │   ├── hooks/            # Custom React hooks
 │   ├── lib/              # Utility libraries
-│   ├── data/             # Static data (users.json)
+│   ├── data/             # Static data (travels, highlights, tips)
 │   ├── types/            # TypeScript type definitions
 │   └── middleware.ts     # Route protection middleware
 ├── workers/              # Cloudflare Workers (auth APIs)
 │   ├── auth/
+│   │   ├── index.ts      # Main router
 │   │   ├── login.ts
 │   │   ├── logout.ts
 │   │   └── verify-session.ts
-│   └── lib/              # Shared utilities (JWT, bcrypt, etc.)
+│   ├── lib/              # Shared utilities (JWT, bcrypt, D1 queries)
+│   ├── migrations/       # D1 database migrations
+│   │   ├── 0001_create_users_table.sql
+│   │   └── 0002_seed_test_users.sql
+│   └── types.ts
 ├── tests/                # Test files
 │   └── workers/          # Workers unit tests
 ├── public/

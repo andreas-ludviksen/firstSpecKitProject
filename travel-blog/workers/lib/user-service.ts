@@ -1,11 +1,10 @@
 /**
  * User lookup and management service
- * Loads users from static JSON file
+ * Uses Cloudflare D1 database for user storage
  */
 
-import usersData from '../users.json';
-
 export interface User {
+  id?: number;
   username: string;
   passwordHash: string;
   role: 'reader' | 'contributor';
@@ -13,49 +12,56 @@ export interface User {
   displayName?: string;
 }
 
-interface UsersFile {
-  users: User[];
-}
-
-// Type-safe access to users data
-const users: User[] = (usersData as UsersFile).users;
-
 /**
  * Find a user by username (case-insensitive)
+ * @param db - D1 database instance
  * @param username - Username to search for
  * @returns User object if found, null otherwise
  */
-export function findUserByUsername(username: string): User | null {
+export async function findUserByUsername(db: any, username: string): Promise<User | null> {
   const normalizedUsername = username.toLowerCase();
   
-  const user = users.find(
-    u => u.username.toLowerCase() === normalizedUsername
-  );
+  const result = await db
+    .prepare('SELECT id, username, password_hash as passwordHash, role, display_name as displayName, created_at as createdAt FROM users WHERE LOWER(username) = ?')
+    .bind(normalizedUsername)
+    .first();
   
-  return user || null;
+  return result || null;
 }
 
 /**
  * Get all users (for admin purposes - not exposed via API)
+ * @param db - D1 database instance
  * @returns Array of all users
  */
-export function getAllUsers(): User[] {
-  return users;
+export async function getAllUsers(db: any): Promise<User[]> {
+  const result = await db
+    .prepare('SELECT id, username, password_hash as passwordHash, role, display_name as displayName, created_at as createdAt FROM users ORDER BY created_at DESC')
+    .all();
+  
+  return result.results || [];
 }
 
 /**
  * Check if a user exists
+ * @param db - D1 database instance
  * @param username - Username to check
  * @returns True if user exists, false otherwise
  */
-export function userExists(username: string): boolean {
-  return findUserByUsername(username) !== null;
+export async function userExists(db: any, username: string): Promise<boolean> {
+  const user = await findUserByUsername(db, username);
+  return user !== null;
 }
 
 /**
  * Get user count
+ * @param db - D1 database instance
  * @returns Total number of users
  */
-export function getUserCount(): number {
-  return users.length;
+export async function getUserCount(db: any): Promise<number> {
+  const result = await db
+    .prepare('SELECT COUNT(*) as count FROM users')
+    .first();
+  
+  return result?.count || 0;
 }

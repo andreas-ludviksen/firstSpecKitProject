@@ -68,10 +68,11 @@ export type LoginResponse = LoginSuccessResponse | ErrorResponse;
 export type VerifyResponse = VerifySessionResponse | ErrorResponse;
 
 // Cloudflare Workers environment bindings
-// Using 'any' for KVNamespace to avoid build issues with Next.js
+// Using 'any' for KVNamespace and D1Database to avoid build issues with Next.js
 export interface Env {
   JWT_SECRET: string;
   RATE_LIMIT_KV?: any; // Optional KV for rate limiting
+  DB: any; // D1 database for user storage
   NODE_ENV?: string;
 }
 
