@@ -21,6 +21,7 @@ import { Router } from 'itty-router';
 import { handleCORSPreflight, addCORSHeaders } from '../lib/cors';
 import { createPost } from './create-post';
 import { getPost } from './get-post';
+import { getPostBySlug } from './get-post-by-slug';
 import { listPosts } from './list-posts';
 import { deletePost } from './delete-post';
 import { updateMetadata } from './update-metadata';
@@ -56,7 +57,10 @@ router.post('/api/posts/create', createPost);
 // List blog posts
 router.get('/api/posts', listPosts);
 
-// Get single blog post
+// Get single blog post by slug
+router.get('/api/posts/slug/:slug', getPostBySlug);
+
+// Get single blog post by ID
 router.get('/api/posts/:postId', getPost);
 
 // Update post metadata
