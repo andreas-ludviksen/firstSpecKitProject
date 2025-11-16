@@ -157,6 +157,9 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
     // Authentication successful - generate JWT
     const token = generateToken(user.username, user.role, rememberMe, env.JWT_SECRET);
 
+    console.log('[LOGIN] JWT_SECRET available:', !!env.JWT_SECRET);
+    console.log('[LOGIN] JWT_SECRET length:', env.JWT_SECRET?.length || 0);
+    console.log('[LOGIN] Token generated, length:', token.length);
     console.log('[LOGIN] Successful authentication:', {
       username: user.username,
       role: user.role,
@@ -169,7 +172,7 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
     const expiresIn = rememberMe ? SEVEN_DAYS : TWENTY_FOUR_HOURS;
     const expiresAt = new Date((now + expiresIn) * 1000).toISOString();
 
-    // Prepare success response
+    // Prepare success response (include token for cross-domain auth)
     const responseData: LoginSuccessResponse = {
       success: true,
       user: {
@@ -178,20 +181,31 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
         displayName: user.displayName,
       },
       expiresAt,
+      token, // Include token in response body for cross-domain scenarios
     };
 
     // Create response with JWT cookie
     const response = jsonResponse(responseData, 200);
 
-    // Set session cookie
-    const cookieValue = [
-      `session=${token}`,
-      'HttpOnly',
-      'Secure',
-      'SameSite=None', // Allow cross-site cookies for Pages <-> Workers
-      `Max-Age=${expiresIn}`,
-      'Path=/',
-    ].join('; ');
+    // Set session cookie (different settings for dev vs production)
+    const isDevelopment = env.NODE_ENV === 'development';
+    
+    const cookieValue = isDevelopment
+      ? [
+          `session=${token}`,
+          'HttpOnly',
+          'SameSite=Lax', // Lax for local development (no Secure needed)
+          `Max-Age=${expiresIn}`,
+          'Path=/',
+        ].join('; ')
+      : [
+          `session=${token}`,
+          'HttpOnly',
+          'Secure',
+          'SameSite=None', // Allow cross-site cookies for Pages <-> Workers in production
+          `Max-Age=${expiresIn}`,
+          'Path=/',
+        ].join('; ');
 
     response.headers.set('Set-Cookie', cookieValue);
 

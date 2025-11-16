@@ -1,0 +1,14 @@
+name = "travel-blog-auth"
+main = "index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 Database for user storage
+[[d1_databases]]
+binding = "DB"
+database_name = "travel-blog-users"
+database_id = "13a81283-7ad4-4879-8287-c435eac578e4"
+
+# Environment variables (secrets set via CLI)
+[vars]
+NODE_ENV = "production"

@@ -17,6 +17,7 @@ export interface LoginSuccessResponse {
     displayName?: string;
   };
   expiresAt: string;
+  token?: string; // JWT token for cross-domain authentication
 }
 
 export interface ErrorResponse {
@@ -47,21 +48,20 @@ export interface LogoutResponse {
 
 /**
  * Get the base URL for auth API endpoints
- * In production, this will be the Cloudflare Workers URL
- * In development, use the Workers dev server or a proxy
+ * In production (static export), call Workers directly
+ * In development, use Next.js API routes as proxy
  */
 function getAuthApiUrl(): string {
-  // In production, use environment variable
-  if (process.env.NEXT_PUBLIC_AUTH_API_URL) {
-    return process.env.NEXT_PUBLIC_AUTH_API_URL;
+  // Check if running in production (static export on Pages)
+  if (typeof window !== 'undefined') {
+    // Production: use environment variable for Worker URL
+    const authUrl = process.env.NEXT_PUBLIC_AUTH_API_URL;
+    if (authUrl) {
+      return authUrl;
+    }
   }
   
-  // In development, use localhost Workers dev server
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:8787';
-  }
-  
-  // Fallback to same origin (assumes Workers deployed on same domain)
+  // Development: use Next.js API routes (same origin)
   return '';
 }
 
@@ -82,6 +82,13 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
     });
 
     const data = await response.json();
+    
+    // Store JWT token in localStorage for cross-domain authentication
+    if (data.success && data.token && typeof window !== 'undefined') {
+      localStorage.setItem('session_token', data.token);
+      console.log('[Auth] Token stored in localStorage');
+    }
+    
     return data;
   } catch (error) {
     console.error('Login request failed:', error);
@@ -122,6 +129,11 @@ export async function verifySession(): Promise<VerifyResponse | ErrorResponse> {
  */
 export async function logout(): Promise<LogoutResponse | ErrorResponse> {
   try {
+    // Clear localStorage token
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('session_token');
+    }
+    
     const response = await fetch(`${getAuthApiUrl()}/api/auth/logout`, {
       method: 'POST',
       credentials: 'include', // Include cookies in request

@@ -1,6 +1,7 @@
 name = "travel-blog-auth"
 main = "auth/index.ts"
-compatibility_date = "2025-11-13"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
 
 # Workers configuration
 workers_dev = true  # Enable *.workers.dev preview URL
@@ -9,9 +10,20 @@ workers_dev = true  # Enable *.workers.dev preview URL
 [vars]
 NODE_ENV = "development"
 
-# KV namespace for rate limiting (create with: wrangler kv:namespace create RATE_LIMIT_KV)
-# Uncomment after creating KV namespace:
+# D1 Database for user storage and blog posts
+[[d1_databases]]
+binding = "DB"
+database_name = "travel-blog-users"
+database_id = "13a81283-7ad4-4879-8287-c435eac578e4"
+
+# R2 Bucket for video storage (feature 004)
+# Create with: npx wrangler r2 bucket create travel-blog-media
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "travel-blog-media"
+
+# KV namespace for rate limiting
+# Create with: npx wrangler kv:namespace create RATE_LIMITER
 # [[kv_namespaces]]
-# binding = "RATE_LIMIT_KV"
-# id = "YOUR_KV_NAMESPACE_ID"
-# preview_id = "YOUR_PREVIEW_KV_NAMESPACE_ID"
+# binding = "RATE_LIMITER"
+# id = "06c6c3b1bb6d455abdf8dea2feef2796"

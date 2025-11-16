@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Static export for production deployment to Cloudflare Pages
   output: 'export',
   images: {
-    unoptimized: true, // Required for static export to non-Vercel hosts
+    unoptimized: true,
   },
 };
 

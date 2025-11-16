@@ -1,0 +1,18 @@
+# Local development environment variables for Cloudflare Workers
+# DO NOT COMMIT - This file should be in .gitignore
+
+# Cloudflare Images Configuration
+# Get from: https://dash.cloudflare.com -> Images -> API tokens
+CLOUDFLARE_ACCOUNT_ID=your-account-id-here
+CLOUDFLARE_IMAGES_API_TOKEN=your-images-api-token-here
+
+# Cloudflare R2 Configuration
+# Get from: https://dash.cloudflare.com -> R2 -> Manage R2 API Tokens
+CLOUDFLARE_R2_ACCESS_KEY_ID=your-r2-access-key-id-here
+CLOUDFLARE_R2_SECRET_ACCESS_KEY=your-r2-secret-access-key-here
+
+# JWT Secret for authentication (from feature 003)
+JWT_SECRET=your-jwt-secret-here
+
+# Node environment
+NODE_ENV=development

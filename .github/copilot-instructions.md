@@ -5,6 +5,7 @@ Auto-generated from all feature plans. Last updated: 2025-11-13
 ## Active Technologies
 - TypeScript 5.x with Next.js 14.x (static export) + Cloudflare Workers Runtime, bcrypt.js, HTTP-only cookies for session management (003-user-authentication)
 - Static JSON files for user credentials (hashed), Cloudflare KV for session storage (optional) or encrypted cookies (003-user-authentication)
+- TypeScript 5.x with Next.js 14.x (App Router, static export) + React 18.x, TailwindCSS 3.x for UI; Cloudflare Workers for media upload API (004-modular-blog-posts)
 
 - TypeScript 5.x with Next.js 14.x (App Router with static export) + Next.js (static export), React 18, TailwindCSS for styling, next/image for optimized images (001-travel-blog-website)
 - Jest 29.x test runner with React Testing Library 14.x for component testing (002-unit-test-runner)
@@ -53,10 +54,10 @@ Testing: Use React Testing Library queries (getByRole, getByText), avoid test ID
 - **Watch Mode**: Run npm run test:watch for continuous testing during development
 
 ## Recent Changes
+- 004-modular-blog-posts: Added TypeScript 5.x with Next.js 14.x (App Router, static export) + React 18.x, TailwindCSS 3.x for UI; Cloudflare Workers for media upload API
 - 003-user-authentication: Added TypeScript 5.x with Next.js 14.x (static export) + Cloudflare Workers Runtime, bcrypt.js, HTTP-only cookies for session management
 
 - 001-travel-blog-website: Added TypeScript 5.x with Next.js 14.x (App Router with static export) + Next.js (static export), React 18, TailwindCSS for styling, next/image for optimized images
-- 002-unit-test-runner: Added Jest 29.x, React Testing Library 14.x, co-located test structure, watch mode, coverage reporting
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
