@@ -55,12 +55,18 @@ export class CloudflareImagesClient {
 
     if (!response.ok) {
       const error = await response.text();
-      throw new Error(`Cloudflare Images upload failed: ${error}`);
+      console.error('[CLOUDFLARE IMAGES] Upload failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        error,
+      });
+      throw new Error(`Cloudflare Images upload failed (${response.status}): ${error}`);
     }
 
     const data = await response.json() as any;
     
     if (!data.success) {
+      console.error('[CLOUDFLARE IMAGES] API returned error:', data);
       throw new Error(`Cloudflare Images upload failed: ${data.errors?.[0]?.message || 'Unknown error'}`);
     }
 

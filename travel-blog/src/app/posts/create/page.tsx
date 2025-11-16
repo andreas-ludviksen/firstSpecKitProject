@@ -34,6 +34,20 @@ export default function CreatePostPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
+  // Helper function to get session token from localStorage or cookie
+  const getSessionToken = (): string | null => {
+    if (typeof window === 'undefined') return null;
+    
+    // Try localStorage first (for production cross-domain)
+    const storedToken = localStorage.getItem('session_token');
+    if (storedToken) return storedToken;
+    
+    // Fallback to cookie (for local development)
+    const cookies = document.cookie.split(';');
+    const sessionCookie = cookies.find(c => c.trim().startsWith('session='));
+    return sessionCookie ? sessionCookie.split('=')[1] : null;
+  };
+  
   // Post metadata
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -85,9 +99,18 @@ export default function CreatePostPage() {
     setError(null);
 
     try {
-      const response = await fetch('/api/posts/create', {
+      const token = getSessionToken();
+      if (!token) {
+        throw new Error('Please log in to create posts');
+      }
+      
+      const postsApiUrl = process.env.NEXT_PUBLIC_POSTS_API_URL || '';
+      const response = await fetch(`${postsApiUrl}/api/posts/create`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({
           title,
           templateId: selectedTemplate,
@@ -124,14 +147,24 @@ export default function CreatePostPage() {
       }]);
 
       try {
+        const token = getSessionToken();
+        if (!token) {
+          throw new Error('Please log in to upload photos');
+        }
+        
         const formData = new FormData();
         formData.append('file', file);
         formData.append('postId', postId);
         formData.append('altText', file.name.replace(/\.[^/.]+$/, '')); // Remove extension
         formData.append('displayOrder', photos.length.toString());
 
-        const response = await fetch('/api/media/upload-photo', {
+        const mediaApiUrl = process.env.NEXT_PUBLIC_MEDIA_API_URL || '';
+        const response = await fetch(`${mediaApiUrl}/api/media/upload-photo`, {
           method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
           body: formData,
         });
 
@@ -181,13 +214,23 @@ export default function CreatePostPage() {
       }]);
 
       try {
+        const token = getSessionToken();
+        if (!token) {
+          throw new Error('Please log in to upload videos');
+        }
+        
         const formData = new FormData();
         formData.append('file', file);
         formData.append('postId', postId);
         formData.append('displayOrder', videos.length.toString());
 
-        const response = await fetch('/api/media/upload-video', {
+        const mediaApiUrl = process.env.NEXT_PUBLIC_MEDIA_API_URL || '';
+        const response = await fetch(`${mediaApiUrl}/api/media/upload-video`, {
           method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
           body: formData,
         });
 
@@ -228,7 +271,7 @@ export default function CreatePostPage() {
 
       if (!response.ok) throw new Error('Failed to update photo');
 
-      const data = await response.json();
+      await response.json();
       setPhotos(prev => prev.map(p => p.id === photoId ? { ...p, ...updates } : p));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update photo');
@@ -391,15 +434,27 @@ export default function CreatePostPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/posts/${postId}`, {
+      const token = getSessionToken();
+      if (!token) {
+        throw new Error('Please log in to publish posts');
+      }
+
+      const postsApiUrl = process.env.NEXT_PUBLIC_POSTS_API_URL || '';
+      const response = await fetch(`${postsApiUrl}/api/posts/${postId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
         body: JSON.stringify({ status: 'published' }),
       });
 
       if (!response.ok) throw new Error('Failed to publish post');
 
-      router.push(`/posts/${postId}`);
+      // Redirect to home page (post detail page not available in static export)
+      alert('Post published successfully!');
+      router.push('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to publish post');
     } finally {

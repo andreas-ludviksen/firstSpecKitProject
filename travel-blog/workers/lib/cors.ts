@@ -14,12 +14,10 @@ export interface CORSConfig {
 const DEFAULT_CONFIG: CORSConfig = {
   // In development: localhost, in production: add your Cloudflare Pages domain
   allowedOrigins: [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'https://travel-blog-4my.pages.dev', // Production Cloudflare Pages URL
+    '*', // Allow all origins temporarily for debugging
   ],
   allowCredentials: true, // Required for cookies
-  allowedMethods: ['GET', 'POST', 'OPTIONS'],
+  allowedMethods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   maxAge: 86400, // 24 hours
 };
@@ -37,30 +35,43 @@ export function addCORSHeaders(
   config: CORSConfig = DEFAULT_CONFIG
 ): Response {
   const origin = request.headers.get('Origin');
-  const newResponse = new Response(response.body, response);
-
+  
+  // Clone the response headers
+  const headers = new Headers(response.headers);
+  
+  // Debug logging
+  console.log('[CORS] Origin:', origin);
+  console.log('[CORS] Allowed origins:', config.allowedOrigins);
+  
   // Check if origin is allowed (including wildcard matching for Pages deployments)
   if (origin) {
     const isAllowed = config.allowedOrigins.includes(origin) || 
                      config.allowedOrigins.includes('*') ||
                      origin.endsWith('.travel-blog-4my.pages.dev'); // Allow all deployment URLs
     
+    console.log('[CORS] Is allowed:', isAllowed);
+    
     if (isAllowed) {
-      newResponse.headers.set('Access-Control-Allow-Origin', origin);
+      headers.set('Access-Control-Allow-Origin', origin);
     }
   } else if (config.allowedOrigins.includes('*')) {
-    newResponse.headers.set('Access-Control-Allow-Origin', '*');
+    headers.set('Access-Control-Allow-Origin', '*');
   }
 
   if (config.allowCredentials) {
-    newResponse.headers.set('Access-Control-Allow-Credentials', 'true');
+    headers.set('Access-Control-Allow-Credentials', 'true');
   }
 
-  newResponse.headers.set('Access-Control-Allow-Methods', config.allowedMethods.join(', '));
-  newResponse.headers.set('Access-Control-Allow-Headers', config.allowedHeaders.join(', '));
-  newResponse.headers.set('Access-Control-Max-Age', config.maxAge.toString());
+  headers.set('Access-Control-Allow-Methods', config.allowedMethods.join(', '));
+  headers.set('Access-Control-Allow-Headers', config.allowedHeaders.join(', '));
+  headers.set('Access-Control-Max-Age', config.maxAge.toString());
 
-  return newResponse;
+  // Create new response with updated headers
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
 }
 
 /**

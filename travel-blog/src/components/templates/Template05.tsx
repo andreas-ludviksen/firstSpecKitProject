@@ -9,7 +9,6 @@
 'use client';
 
 import Image from 'next/image';
-import { PlaceholderImages } from '@/components/blog/PlaceholderImage';
 
 interface Photo {
   id: string;
@@ -82,7 +81,7 @@ export default function Template05({ post, content }: Template05Props) {
 
       {/* Masonry Grid */}
       <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
-        {allItems.map((item, idx) => {
+        {allItems.map((item) => {
           if (item.type === 'photo') {
             const aspectRatio = item.data.width && item.data.height
               ? item.data.width / item.data.height

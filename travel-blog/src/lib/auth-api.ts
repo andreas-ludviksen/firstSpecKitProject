@@ -17,6 +17,7 @@ export interface LoginSuccessResponse {
     displayName?: string;
   };
   expiresAt: string;
+  token?: string; // JWT token for cross-domain authentication
 }
 
 export interface ErrorResponse {
@@ -47,10 +48,20 @@ export interface LogoutResponse {
 
 /**
  * Get the base URL for auth API endpoints
- * Always use Next.js API routes as a proxy to avoid CORS and cookie issues
+ * In production (static export), call Workers directly
+ * In development, use Next.js API routes as proxy
  */
 function getAuthApiUrl(): string {
-  // Use Next.js API routes (same origin)
+  // Check if running in production (static export on Pages)
+  if (typeof window !== 'undefined') {
+    // Production: use environment variable for Worker URL
+    const authUrl = process.env.NEXT_PUBLIC_AUTH_API_URL;
+    if (authUrl) {
+      return authUrl;
+    }
+  }
+  
+  // Development: use Next.js API routes (same origin)
   return '';
 }
 
@@ -71,6 +82,13 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
     });
 
     const data = await response.json();
+    
+    // Store JWT token in localStorage for cross-domain authentication
+    if (data.success && data.token && typeof window !== 'undefined') {
+      localStorage.setItem('session_token', data.token);
+      console.log('[Auth] Token stored in localStorage');
+    }
+    
     return data;
   } catch (error) {
     console.error('Login request failed:', error);
@@ -111,6 +129,11 @@ export async function verifySession(): Promise<VerifyResponse | ErrorResponse> {
  */
 export async function logout(): Promise<LogoutResponse | ErrorResponse> {
   try {
+    // Clear localStorage token
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('session_token');
+    }
+    
     const response = await fetch(`${getAuthApiUrl()}/api/auth/logout`, {
       method: 'POST',
       credentials: 'include', // Include cookies in request

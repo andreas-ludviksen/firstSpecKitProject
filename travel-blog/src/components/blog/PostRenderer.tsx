@@ -13,6 +13,7 @@ import { type Video } from './VideoList';
 import { type TextBlock } from './TextEditor';
 
 // Dynamically import templates (will be created in Phase 4)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const templates: Record<string, any> = {
   '1': dynamic(() => import('@/components/templates/Template01').catch(() => DefaultTemplate)),
   '2': dynamic(() => import('@/components/templates/Template02').catch(() => DefaultTemplate)),

@@ -8,7 +8,6 @@
 'use client';
 
 import { useState, useRef, ChangeEvent, DragEvent } from 'react';
-import Image from 'next/image';
 
 interface MediaUploaderProps {
   onUpload: (files: File[]) => Promise<void>;

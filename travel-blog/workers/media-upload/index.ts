@@ -9,6 +9,7 @@
  */
 
 import { Router } from 'itty-router';
+import { handleCORSPreflight, addCORSHeaders } from '../lib/cors';
 import { uploadPhoto } from './upload-photo';
 import { uploadVideo } from './upload-video';
 import { validateUrl } from './validate-url';
@@ -40,6 +41,9 @@ router.post('/api/media/upload-video', uploadVideo);
 // Validate external media URL
 router.post('/api/media/validate-url', validateUrl);
 
+// Handle OPTIONS preflight requests for CORS
+router.options('*', (request) => handleCORSPreflight(request));
+
 // 404 handler
 router.all('*', () => errorResponse('Not Found', 'The requested resource was not found', 404));
 
@@ -47,10 +51,11 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
       const response = await router.fetch(request, env, ctx);
-      return response || new Response('Not Found', { status: 404 });
+      return addCORSHeaders(response || new Response('Not Found', { status: 404 }), request);
     } catch (error) {
       console.error('Media worker error:', error);
-      return handleError(error);
+      const errorResp = handleError(error);
+      return addCORSHeaders(errorResp, request);
     }
   },
 };

@@ -18,6 +18,7 @@
  */
 
 import { Router } from 'itty-router';
+import { handleCORSPreflight, addCORSHeaders } from '../lib/cors';
 import { createPost } from './create-post';
 import { getPost } from './get-post';
 import { listPosts } from './list-posts';
@@ -79,6 +80,9 @@ router.delete('/api/posts/:postId/videos/:videoId', deleteVideo);
 router.put('/api/posts/:postId/text/:textId', updateText);
 router.delete('/api/posts/:postId/text/:textId', deleteText);
 
+// Handle OPTIONS preflight requests for CORS
+router.options('*', (request) => handleCORSPreflight(request));
+
 // 404 handler
 router.all('*', () => errorResponse('Not Found', 'The requested resource was not found', 404));
 
@@ -86,10 +90,11 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
       const response = await router.fetch(request, env, ctx);
-      return response || new Response('Not Found', { status: 404 });
+      return addCORSHeaders(response || new Response('Not Found', { status: 404 }), request);
     } catch (error) {
       console.error('Posts worker error:', error);
-      return handleError(error);
+      const errorResp = handleError(error);
+      return addCORSHeaders(errorResp, request);
     }
   },
 };

@@ -36,6 +36,7 @@ export interface LoginSuccessResponse {
     displayName?: string;
   };
   expiresAt: string; // ISO 8601 timestamp
+  token?: string; // JWT token for cross-domain authentication (optional for backward compatibility)
 }
 
 // Logout response

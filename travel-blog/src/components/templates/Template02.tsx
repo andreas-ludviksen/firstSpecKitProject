@@ -58,6 +58,7 @@ export default function Template02({ post, content }: Template02Props) {
   const textBlocks = content.textBlocks.slice(0, maxTextBlocks);
 
   // Interleave content for story flow
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const allContent: Array<{ type: 'photo' | 'video' | 'text'; data: any; index: number }> = [
     ...photos.map((p, i) => ({ type: 'photo' as const, data: p, index: i })),
     ...videos.map((v, i) => ({ type: 'video' as const, data: v, index: i })),
@@ -96,7 +97,7 @@ export default function Template02({ post, content }: Template02Props) {
 
       {/* Story Content (Interleaved) */}
       <div className="space-y-10">
-        {allContent.map((item, idx) => {
+        {allContent.map((item) => {
           if (item.type === 'photo') {
             return (
               <div key={`photo-${item.data.id}`} className="space-y-3">
