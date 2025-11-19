@@ -1,0 +1,50 @@
+name: CI - Build and Test
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'travel-blog/**'
+      - '.github/workflows/ci.yml'
+  workflow_dispatch:  # Allow manual trigger from GitHub Actions tab
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    name: Test and Build Travel Blog
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'travel-blog/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./travel-blog
+
+      - name: Run linter
+        run: npm run lint
+        working-directory: ./travel-blog
+
+      - name: Run tests (Client)
+        run: npm run test:client
+        working-directory: ./travel-blog
+
+      - name: Run tests (Workers)
+        run: npm run test:workers
+        working-directory: ./travel-blog
+
+      - name: Build Next.js site
+        run: npm run build
+        working-directory: ./travel-blog
+        env:
+          NEXT_PUBLIC_AUTH_API_URL: https://travel-blog-auth.andreas-e-ludviksen.workers.dev
+          NEXT_PUBLIC_POSTS_API_URL: https://travel-blog-posts.andreas-e-ludviksen.workers.dev
+          NEXT_PUBLIC_MEDIA_API_URL: https://travel-blog-media.andreas-e-ludviksen.workers.dev
