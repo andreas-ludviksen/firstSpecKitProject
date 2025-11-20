@@ -2,7 +2,7 @@
 layout: default
 title: Home
 nav_order: 1
-description: "Travel Blog - Family Adventures Around the World"
+description: "Travel Bloggg - Family Adventures Around the World"
 permalink: /
 ---
 
