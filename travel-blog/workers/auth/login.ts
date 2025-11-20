@@ -161,7 +161,6 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
     console.log('[LOGIN] JWT_SECRET length:', env.JWT_SECRET?.length || 0);
     console.log('[LOGIN] Token generated, length:', token.length);
     console.log('[LOGIN] Successful authentication:', {
-      username: user.username,
       role: user.role,
       rememberMe,
       expiresIn: rememberMe ? '7 days' : '24 hours',
