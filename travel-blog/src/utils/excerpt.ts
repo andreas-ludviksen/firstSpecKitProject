@@ -5,6 +5,7 @@
  * Truncate text for post previews
  */
 
+import striptags from 'striptags';
 /**
  * Generate excerpt from text
  * @param text - Full text content
@@ -40,7 +41,7 @@ export function stripHtml(html: string | null | undefined): string {
   if (!html) {
     return '';
   }
-  return html.replace(/<[^>]*>/g, '');
+  return striptags(html);
 }
 
 /**
