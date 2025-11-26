@@ -126,8 +126,12 @@ export default function Template02({ post, content }: Template02Props) {
                   <video
                     src={item.data.url}
                     controls
+                    playsInline
+                    preload="metadata"
                     className="w-full h-full"
                     poster={item.data.thumbnailUrl || undefined}
+                    controlsList="nodownload"
+                    crossOrigin="anonymous"
                   />
                 </div>
                 {item.data.caption && (

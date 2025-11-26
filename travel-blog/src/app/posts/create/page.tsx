@@ -234,11 +234,11 @@ export default function CreatePostPage() {
         }
         
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('video', file);
         formData.append('postId', postId);
         formData.append('displayOrder', videos.length.toString());
 
-        const response = await fetch(`${getMediaApiUrl()}/api/media/upload-video`, {
+        const response = await fetch(`${getMediaApiUrl()}/api/media/upload-video-stream`, {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -255,8 +255,8 @@ export default function CreatePostPage() {
         const data = await response.json();
         
         setVideos(prev => [...prev, {
-          id: data.videoId,
-          url: data.url,
+          id: data.video.id,
+          url: data.video.url,
           caption: null,
           displayOrder: videos.length,
         }]);

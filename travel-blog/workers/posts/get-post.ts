@@ -108,7 +108,7 @@ export const getPost = withOptionalAuth(async (request: Request, user, env: Env,
     // Get videos
     const videos = await db.query(
       `SELECT 
-        id, url, r2_object_key, caption, display_order,
+        id, url, r2_key, caption, display_order,
         thumbnail_url, duration_seconds
       FROM video_content
       WHERE post_id = ?
@@ -155,7 +155,7 @@ export const getPost = withOptionalAuth(async (request: Request, user, env: Env,
         videos: videos.map((v: any) => ({
           id: v.id,
           url: v.url,
-          r2ObjectKey: v.r2_object_key,
+          r2Key: v.r2_key,
           caption: v.caption,
           displayOrder: v.display_order,
           thumbnailUrl: v.thumbnail_url,

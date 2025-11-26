@@ -17,3 +17,20 @@ bucket_name = "travel-blog-media"
 # Environment variables (secrets set via CLI)
 [vars]
 NODE_ENV = "production"
+
+# Development environment
+[env.dev]
+name = "travel-blog-media-dev"
+
+[env.dev.vars]
+NODE_ENV = "development"
+
+[[env.dev.d1_databases]]
+binding = "DB"
+database_name = "travel-blog-users"
+database_id = "13a81283-7ad4-4879-8287-c435eac578e4"
+
+[[env.dev.r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "travel-blog-media-dev"
+

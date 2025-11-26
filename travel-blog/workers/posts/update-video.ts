@@ -118,7 +118,7 @@ export const updateVideo = withAuth(async (request: Request, user, env: Env, par
     // Fetch updated video
     const updatedVideo = await db.queryOne(
       `SELECT 
-        id, post_id, url, r2_object_key, caption, display_order,
+        id, post_id, url, r2_key, caption, display_order,
         source, thumbnail_url, duration_seconds, uploaded_at
       FROM video_content
       WHERE id = ?`,
@@ -131,7 +131,7 @@ export const updateVideo = withAuth(async (request: Request, user, env: Env, par
         id: updatedVideo.id,
         postId: updatedVideo.post_id,
         url: updatedVideo.url,
-        r2ObjectKey: updatedVideo.r2_object_key,
+        r2Key: updatedVideo.r2_key,
         caption: updatedVideo.caption,
         displayOrder: updatedVideo.display_order,
         source: updatedVideo.source,

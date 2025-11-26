@@ -4,14 +4,16 @@
  * 
  * Routes:
  * - POST /api/media/upload-photo
- * - POST /api/media/upload-video
+ * - POST /api/media/upload-video-stream
+ * - GET /api/media/video/:videoId/:filename (legacy R2 videos)
  * - POST /api/media/validate-url
  */
 
 import { Router } from 'itty-router';
 import { handleCORSPreflight, addCORSHeaders } from '../lib/cors';
 import { uploadPhoto } from './upload-photo';
-import { uploadVideo } from './upload-video';
+import { uploadVideoStream } from './upload-video-stream';
+import { getVideo } from './get-video';
 import { validateUrl } from './validate-url';
 import { errorResponse, handleError } from '../lib/errors';
 
@@ -21,6 +23,7 @@ interface Env {
   CLOUDFLARE_ACCOUNT_ID: string;
   CLOUDFLARE_IMAGES_ACCOUNT_HASH: string;
   CLOUDFLARE_IMAGES_API_TOKEN: string;
+  CLOUDFLARE_STREAM_API_TOKEN: string;
   JWT_SECRET: string;
 }
 
@@ -36,8 +39,14 @@ router.get('/api/media/health', () => {
 // Upload photo to Cloudflare Images
 router.post('/api/media/upload-photo', uploadPhoto);
 
-// Upload video to Cloudflare R2
-router.post('/api/media/upload-video', uploadVideo);
+// Upload video to Cloudflare Stream (auto-encoding for iOS compatibility)
+router.post('/api/media/upload-video-stream', uploadVideoStream);
+
+// Get video from R2 (legacy videos only - new videos use Stream HLS URLs)
+router.get('/api/media/video/:videoId/:filename', getVideo);
+
+// Handle HEAD requests for video (Safari requirement)
+router.head('/api/media/video/:videoId/:filename', getVideo);
 
 // Validate external media URL
 router.post('/api/media/validate-url', validateUrl);

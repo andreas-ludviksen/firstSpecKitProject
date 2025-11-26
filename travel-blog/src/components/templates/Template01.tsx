@@ -116,8 +116,12 @@ export default function Template01({ post, content }: Template01Props) {
             <video
               src={videos[0].url}
               controls
+              playsInline
+              preload="metadata"
               className="w-full h-full"
               poster={videos[0].thumbnailUrl || undefined}
+              controlsList="nodownload"
+              crossOrigin="anonymous"
             />
           </div>
           {videos[0].caption && (
@@ -185,8 +189,12 @@ export default function Template01({ post, content }: Template01Props) {
             <video
               src={videos[1].url}
               controls
+              playsInline
+              preload="metadata"
               className="w-full h-full"
               poster={videos[1].thumbnailUrl || undefined}
+              controlsList="nodownload"
+              crossOrigin="anonymous"
             />
           </div>
           {videos[1].caption && (

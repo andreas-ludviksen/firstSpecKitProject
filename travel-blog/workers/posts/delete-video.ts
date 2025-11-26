@@ -47,9 +47,9 @@ export const deleteVideo = withAuth(async (request: Request, user, env: Env, par
       throw new UnauthorizedError('You do not have permission to delete this video');
     }
 
-    // Get video info to delete from R2
+    // Get video metadata to delete from R2
     const video = await db.queryOne(
-      'SELECT id, r2_object_key FROM video_content WHERE id = ? AND post_id = ?',
+      'SELECT id, r2_key FROM video_content WHERE id = ? AND post_id = ?',
       [videoId, postId]
     );
 
@@ -72,9 +72,9 @@ export const deleteVideo = withAuth(async (request: Request, user, env: Env, par
     // Delete from R2 (best effort)
     try {
       const r2Client = createR2Client(env.MEDIA_BUCKET);
-      await r2Client.delete(video.r2_object_key);
+      await r2Client.delete(video.r2_key);
     } catch (error) {
-      console.error(`Failed to delete video from R2: ${video.r2_object_key}`, error);
+      console.error(`Failed to delete video from R2: ${video.r2_key}`, error);
       // Continue - video is already removed from database
     }
 
