@@ -1,0 +1,28 @@
+# CODEOWNERS file for firstSpecKitProject
+# This file defines who owns code in the repository and automatically
+# assigns them as reviewers on pull requests.
+#
+# More info: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# GITHUB CONFIGURATION REQUIRED:
+# To enforce code owner reviews, configure a Branch Ruleset:
+# 1. Go to Settings → Rules → Rulesets
+# 2. Click "New ruleset" → "New branch ruleset"
+# 3. Name: "Main branch protection"
+# 4. Target: "Default branch" or specify "main"
+# 5. Enable these rules:
+#    - ✅ Require a pull request before merging
+#      - Required approvals: 1
+#      - ✅ Require review from Code Owners
+#    - ✅ Block force pushes
+#    - ✅ Require conversation resolution before merging (optional)
+# 6. Enforcement status: "Active"
+# 7. Click "Create"
+
+# Default owner for everything in the repo
+* @andreas-ludviksen
+
+# Specific paths (examples - uncomment and modify as needed)
+# /docs/ @andreas-ludviksen
+# /specs/ @andreas-ludviksen
+# /travel-blog/ @andreas-ludviksen
