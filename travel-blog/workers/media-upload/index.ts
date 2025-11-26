@@ -12,6 +12,7 @@ import { Router } from 'itty-router';
 import { handleCORSPreflight, addCORSHeaders } from '../lib/cors';
 import { uploadPhoto } from './upload-photo';
 import { uploadVideo } from './upload-video';
+import { uploadVideoStream } from './upload-video-stream';
 import { getVideo } from './get-video';
 import { validateUrl } from './validate-url';
 import { errorResponse, handleError } from '../lib/errors';
@@ -22,6 +23,7 @@ interface Env {
   CLOUDFLARE_ACCOUNT_ID: string;
   CLOUDFLARE_IMAGES_ACCOUNT_HASH: string;
   CLOUDFLARE_IMAGES_API_TOKEN: string;
+  CLOUDFLARE_STREAM_API_TOKEN: string;
   JWT_SECRET: string;
 }
 
@@ -39,6 +41,9 @@ router.post('/api/media/upload-photo', uploadPhoto);
 
 // Upload video to Cloudflare R2
 router.post('/api/media/upload-video', uploadVideo);
+
+// Upload video to Cloudflare Stream (auto-encoding)
+router.post('/api/media/upload-video-stream', uploadVideoStream);
 
 // Get video from R2
 router.get('/api/media/video/:videoId/:filename', getVideo);
