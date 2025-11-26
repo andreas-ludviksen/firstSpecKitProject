@@ -23,6 +23,7 @@ interface Env {
   MEDIA_BUCKET: R2Bucket;
   CLOUDFLARE_ACCOUNT_ID: string;
   CLOUDFLARE_IMAGES_API_TOKEN: string;
+  CLOUDFLARE_STREAM_API_TOKEN: string;
   JWT_SECRET: string;
 }
 
@@ -53,9 +54,9 @@ export const deletePost = withAuth(async (request: Request & { params?: any }, u
       throw new UnauthorizedError('You do not have permission to delete this post');
     }
 
-    // Get video content to delete from R2
+    // Get video content to delete from R2 and Stream
     const videos = await db.query(
-      'SELECT r2_key FROM video_content WHERE post_id = ?',
+      'SELECT r2_key, stream_id FROM video_content WHERE post_id = ?',
       [postId]
     );
 
@@ -107,25 +108,57 @@ export const deletePost = withAuth(async (request: Request & { params?: any }, u
       console.log(`[DELETE POST] Photos deleted: ${deletedPhotos}, failed: ${failedPhotos}`);
     }
 
-    // Delete videos from R2 (best effort)
+    // Delete videos from Cloudflare Stream and R2 (best effort)
     if (videos.length > 0) {
-      const r2Client = createR2Client(env.MEDIA_BUCKET);
-      let deletedVideos = 0;
-      let failedVideos = 0;
+      let deletedStreamVideos = 0;
+      let failedStreamVideos = 0;
+      let deletedR2Videos = 0;
+      let failedR2Videos = 0;
 
       for (const video of videos) {
-        try {
-          await r2Client.delete(video.r2_key);
-          deletedVideos++;
-          console.log(`[DELETE POST] Deleted video: ${video.r2_key}`);
-        } catch (error) {
-          failedVideos++;
-          console.error(`[DELETE POST] Error deleting video ${video.r2_key}:`, error);
-          // Continue deleting other videos even if one fails
+        // Delete from Cloudflare Stream if it's a Stream video
+        if (video.stream_id) {
+          try {
+            const streamResponse = await fetch(
+              `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/stream/${video.stream_id}`,
+              {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Bearer ${env.CLOUDFLARE_STREAM_API_TOKEN}`,
+                },
+              }
+            );
+
+            if (streamResponse.ok) {
+              deletedStreamVideos++;
+              console.log(`[DELETE POST] Deleted Stream video: ${video.stream_id}`);
+            } else {
+              failedStreamVideos++;
+              const errorText = await streamResponse.text();
+              console.warn(`[DELETE POST] Failed to delete Stream video ${video.stream_id}: ${errorText}`);
+            }
+          } catch (error) {
+            failedStreamVideos++;
+            console.error(`[DELETE POST] Error deleting Stream video ${video.stream_id}:`, error);
+          }
+        }
+
+        // Delete from R2 if it's a legacy R2 video (not a Stream placeholder)
+        if (video.r2_key && !video.r2_key.startsWith('stream/')) {
+          try {
+            const r2Client = createR2Client(env.MEDIA_BUCKET);
+            await r2Client.delete(video.r2_key);
+            deletedR2Videos++;
+            console.log(`[DELETE POST] Deleted R2 video: ${video.r2_key}`);
+          } catch (error) {
+            failedR2Videos++;
+            console.error(`[DELETE POST] Error deleting R2 video ${video.r2_key}:`, error);
+          }
         }
       }
 
-      console.log(`[DELETE POST] Videos deleted: ${deletedVideos}, failed: ${failedVideos}`);
+      console.log(`[DELETE POST] Stream videos deleted: ${deletedStreamVideos}, failed: ${failedStreamVideos}`);
+      console.log(`[DELETE POST] R2 videos deleted: ${deletedR2Videos}, failed: ${failedR2Videos}`);
     }
 
     // Return response
