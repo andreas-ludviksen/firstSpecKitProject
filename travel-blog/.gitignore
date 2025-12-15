@@ -43,6 +43,7 @@ wrangler.toml.backup
 
 # User credentials (migrated to D1 database)
 workers/users.json
+CREDENTIALS.md
 
 # environment variables
 .env

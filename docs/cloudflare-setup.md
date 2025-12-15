@@ -198,8 +198,8 @@ Expected output:
 ┌────────────────┬─────────────┐
 │ username       │ role        │
 ├────────────────┼─────────────┤
-│ testuser       │ reader      │
-│ testcontributor│ contributor │
+│ leser          │ reader      │
+│ admin          │ contributor │
 └────────────────┴─────────────┘
 ```
 
@@ -368,10 +368,12 @@ curl https://travel-blog-auth.YOUR-SUBDOMAIN.workers.dev/api/auth/health
 ```bash
 curl -X POST https://travel-blog-auth.YOUR-SUBDOMAIN.workers.dev/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"testuser","password":"testpassword123"}'
+  -d '{"username":"YOUR_USERNAME","password":"YOUR_PASSWORD"}'
 
 # Expected: 200 OK with JWT cookie in Set-Cookie header
 ```
+
+**Note**: Use your actual user credentials. Test accounts (testuser, testcontributor) have been disabled as of 2025-12-15.
 
 **💡 Tip**: If you get CORS errors in the browser, continue to Step 8.
 
@@ -487,11 +489,11 @@ wrangler deploy
 
 1. Visit your deployed Pages URL: `https://travel-blog.pages.dev`
 2. You should be redirected to `/login` (middleware protection)
-3. Enter test credentials:
-   - **Username**: `testuser`
-   - **Password**: `testpassword123`
+3. Enter your user credentials (query database for active users)
 4. Click **Login**
-5. You should be redirected to home page with "Welcome, Test User" in nav
+5. You should be redirected to home page with your display name in nav
+
+**Note**: Test accounts (`testuser`, `testcontributor`) have been disabled. Use actual credentials from your database.
 
 **📸 Screenshot checkpoint**: Successful login with username displayed
 
@@ -522,11 +524,11 @@ wrangler deploy
 
 ### 9.5 Test Contributor Role
 
-1. Login with contributor credentials:
-   - **Username**: `testcontributor`
-   - **Password**: `testpassword123`
+1. Login with a user that has contributor role
 2. Verify "Contributor" badge appears in navigation
 3. Same access as reader (upload UI not yet implemented)
+
+**Note**: Query your database to find contributor users: `wrangler d1 execute travel-blog-db --remote --command "SELECT username, role FROM users WHERE role='contributor'"`
 
 ---
 

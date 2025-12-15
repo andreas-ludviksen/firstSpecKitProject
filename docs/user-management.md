@@ -236,9 +236,8 @@ Remove-Item temp-list.sql
 ┌─────────────────┬─────────────┬──────────────────┬─────────────────────┐
 │ username        │ role        │ display_name     │ created_at          │
 ├─────────────────┼─────────────┼──────────────────┼─────────────────────┤
-│ henrik          │ contributor │ Henrik           │ 2025-11-14 13:00:00 │
-│ testcontributor │ contributor │ Test Contributor │ 2025-11-13 00:00:00 │
-│ testuser        │ reader      │ Test User        │ 2025-11-13 00:00:00 │
+│ leser           │ reader      │ Leser            │ 2025-12-15 10:00:00 │
+│ admin           │ contributor │ Admin            │ 2025-12-15 10:00:00 │
 └─────────────────┴─────────────┴──────────────────┴─────────────────────┘
 ```
 
@@ -351,9 +350,18 @@ Invoke-WebRequest -Uri "https://travel-blog-auth.andreas-e-ludviksen.workers.dev
 
 ## Current Users
 
-| Username        | Role        | Display Name     | Added      |
-|-----------------|-------------|------------------|------------|
-| testuser        | reader      | Test User        | 2025-11-13 |
-| testcontributor | contributor | Test Contributor | 2025-11-13 |
+**For security reasons, active user accounts are not documented here.**
 
-**Note**: Production users not listed here for security. Use `wrangler d1 execute` to query database.
+To view current users, query the database:
+```bash
+wrangler d1 execute travel-blog-db --remote --command "SELECT username, role, display_name, created_at FROM users ORDER BY created_at DESC"
+```
+
+### Disabled Test Users (Historical Reference)
+
+| Username        | Role        | Display Name     | Status   | Date Disabled |
+|-----------------|-------------|------------------|----------|---------------|
+| testuser        | reader      | Test User        | Disabled | 2025-12-15    |
+| testcontributor | contributor | Test Contributor | Disabled | 2025-12-15    |
+
+**Note**: These test accounts have been commented out in the migration file and will not be created in new deployments.

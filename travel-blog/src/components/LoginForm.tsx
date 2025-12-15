@@ -135,12 +135,6 @@ export default function LoginForm({ redirectPath }: LoginFormProps) {
       >
         {isLoading ? 'Logging in...' : 'Login'}
       </button>
-
-      <div className="text-sm text-gray-600 text-center mt-4">
-        <p>Test credentials:</p>
-        <p className="font-mono text-xs mt-1">testuser / testpassword123</p>
-        <p className="font-mono text-xs">testcontributor / testpassword123</p>
-      </div>
     </form>
   );
 }

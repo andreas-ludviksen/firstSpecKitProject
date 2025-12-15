@@ -50,20 +50,21 @@ NEXT_PUBLIC_AUTH_API_URL=http://localhost:8787
 
 1. **Visit the app**: Open `http://localhost:3000`
 2. **Middleware redirect**: You should be redirected to `/login` (requires authentication)
-3. **Login**:
-   - Username: `testuser`
-   - Password: `testpassword123`
-   - Check "Remember me" for 7-day session (optional)
+3. **Login**: Use active credentials (see database or ask administrator)
 4. **Success**: After login, you'll be redirected to the home page
 5. **Navigation**: You should see your username in the navigation bar
 6. **Logout**: Click the "Logout" button to clear the session
 
 ## Test Accounts
 
-From `travel-blog/workers/users.json`:
+**UPDATED 2025-12-15**: Test accounts (`testuser`, `testcontributor`) have been disabled.
 
-- **Reader**: `testuser` / `testpassword123`
-- **Contributor**: `testcontributor` / `testpassword123`
+Active user credentials are managed securely and not documented here. 
+
+For local testing, query your D1 database to see active users:
+```bash
+wrangler d1 execute travel-blog-db --local --command "SELECT username, role FROM users"
+```
 
 ## Verify JWT Cookie
 
